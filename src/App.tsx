@@ -10,11 +10,12 @@ const HOME_CONTENT = siteData.home
 const asset = (src: string) => src.startsWith('/') && !src.startsWith(import.meta.env.BASE_URL) ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src
 const reference = (name: string) => asset(`/images/reference-home/${name}`)
 const brochureUrl = 'https://online.flippingbook.com/view/1004331464/'
+const CART_STORAGE_KEY = `maison-debrah-cart:${import.meta.env.BASE_URL}`
 
 type Cart = Record<string, number>
 function loadCart(): Cart {
   try {
-    const saved: unknown = JSON.parse(localStorage.getItem('maison-debrah-cart') || '{}')
+    const saved: unknown = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '{}')
     if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return {}
     return Object.fromEntries(
       Object.entries(saved)
@@ -1450,7 +1451,7 @@ export default function App() {
   const [cart, setCart] = useState<Cart>(loadCart)
 
   useEffect(() => {
-    localStorage.setItem('maison-debrah-cart', JSON.stringify(cart))
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
   }, [cart])
 
   useEffect(() => {

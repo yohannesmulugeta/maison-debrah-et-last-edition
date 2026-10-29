@@ -6,7 +6,7 @@ import {
   type Product,
 } from "../data/catalog";
 
-const DRAFT_KEY = "maison-debrah-admin-demo-v1";
+const DRAFT_KEY = `maison-debrah-admin-demo-v1:${import.meta.env.BASE_URL}`;
 const PAGE_SIZE = 9;
 
 const imageUrl = (src: string) =>
