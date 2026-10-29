@@ -494,8 +494,6 @@ function Home({ products }: { products: Product[] }) {
     .filter((item): item is Product => Boolean(item))
   const [newsletterStatus, setNewsletterStatus] = useState('')
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
-  const [isSlideshowPaused, setIsSlideshowPaused] = useState(false)
-  const [playThroughInteraction, setPlayThroughInteraction] = useState(false)
   const [slideCycleKey, setSlideCycleKey] = useState(0)
   const heroRef = useRef<HTMLElement>(null)
   const activeScene = homeShowroomScenes[activeSceneIndex]
@@ -505,25 +503,14 @@ function Home({ products }: { products: Product[] }) {
     setSlideCycleKey((k) => k + 1)
   }
 
-  const nextSlide = () => {
-    setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
-    setSlideCycleKey((k) => k + 1)
-  }
-
-  const prevSlide = () => {
-    setActiveSceneIndex((index) => (index - 1 + homeShowroomScenes.length) % homeShowroomScenes.length)
-    setSlideCycleKey((k) => k + 1)
-  }
-
   useEffect(() => {
-    if (isSlideshowPaused) return
     const timer = window.setInterval(() => {
-      if (document.hidden || (!playThroughInteraction && (window.matchMedia('(prefers-reduced-motion: reduce)').matches || heroRef.current?.matches(':hover, :focus-within')))) return
+      if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches || heroRef.current?.matches(':hover, :focus-within')) return
       setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
       setSlideCycleKey((k) => k + 1)
     }, 6000)
     return () => window.clearInterval(timer)
-  }, [isSlideshowPaused, playThroughInteraction])
+  }, [])
 
   return (
     <main id="main-content">
@@ -535,14 +522,6 @@ function Home({ products }: { products: Product[] }) {
               <img src={asset(`/images/projects/${scene.name}-2400.webp`)} alt={scene.alt} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : undefined} />
             </picture>
           ))}
-        </div>
-
-        <div className="showroom-hero-badge" aria-hidden="true">
-          <span className="hero-badge-dot"></span>
-          <div className="hero-badge-content">
-            <span className="hero-badge-space">{activeScene.label}</span>
-            <span className="hero-badge-location">Addis Ababa Flagship</span>
-          </div>
         </div>
 
         <div className="showroom-hero-copy">
@@ -558,13 +537,6 @@ function Home({ products }: { products: Product[] }) {
             </Link>
           </div>
         </div>
-
-        <a href="#collection-paths" className="hero-scroll-cue" aria-label="Scroll to discover collections">
-          <span className="hero-scroll-mouse">
-            <span className="hero-scroll-dot"></span>
-          </span>
-          <span className="hero-scroll-text">Explore</span>
-        </a>
 
         <div className="showroom-hero-nav" aria-label="Showroom scene selector">
           <div className="showroom-hero-tabs">
@@ -585,28 +557,10 @@ function Home({ products }: { products: Product[] }) {
                   <div
                     key={`${index}-${slideCycleKey}`}
                     className="hero-tab-fill"
-                    style={{
-                      animationPlayState: isSlideshowPaused ? 'paused' : 'running',
-                    }}
                   />
                 </div>
               </button>
             ))}
-          </div>
-
-          <div className="showroom-hero-controls" aria-label="Showroom slideshow controls">
-            <button type="button" onClick={prevSlide} aria-label="Previous showroom photo">‹</button>
-            <button type="button" onClick={nextSlide} aria-label="Next showroom photo">›</button>
-            <button
-              type="button"
-              onClick={() => {
-                setPlayThroughInteraction(isSlideshowPaused)
-                setIsSlideshowPaused(!isSlideshowPaused)
-              }}
-              aria-label={isSlideshowPaused ? 'Play slideshow' : 'Pause slideshow'}
-            >
-              <span aria-hidden="true">{isSlideshowPaused ? '▶' : 'Ⅱ'}</span>
-            </button>
           </div>
         </div>
       </section>
