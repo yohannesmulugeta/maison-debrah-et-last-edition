@@ -4,7 +4,7 @@ A separate English-language React/Vite preview of [Maison Debrah's Dutch staging
 
 ## Public draft preview
 
-[View the Ethiopia draft](https://yohannesmulugeta.github.io/Maison-Debrah-et/) after the Pages workflow finishes. The URL is a GitHub Pages preview, not a Maison Debrah-controlled domain.
+[View the Ethiopia draft](https://yohannesmulugeta.github.io/maison-debrah-et-last-edition/) after the Pages workflow finishes. The URL is a GitHub Pages preview, not a Maison Debrah-controlled domain.
 
 ## Run locally
 
@@ -26,7 +26,7 @@ npm.cmd run build
 
 ## Product studio demonstration
 
-[Open the admin demo](https://yohannesmulugeta.github.io/Maison-Debrah-et/admin/) after the Pages workflow finishes. It shows nine existing products from the furniture, lighting and decoration collections. Visitors can search, filter, add a sample product, edit a product, choose a small local preview image, and remove a product with confirmation.
+[Open the admin demo](https://yohannesmulugeta.github.io/maison-debrah-et-last-edition/admin/) after the Pages workflow finishes. It shows nine existing products from the furniture, lighting and decoration collections. Visitors can search, filter, add a sample product, edit a product, choose a small local preview image, and remove a product with confirmation.
 
 The demo has **no sign-in or database**. Changes are saved only in that browser's local storage, never in GitHub or on the public storefront. Use **Reset demo** to restore the original sample. Do not enter confidential information. This page is a visual and interaction preview for client review, not a live product management system.
 
@@ -34,7 +34,7 @@ The repository no longer contains Pages CMS configuration or links. The original
 
 ## What is implemented
 
-- Responsive English homepage using a Maison Debrah showroom hero, paired collection panels, eight featured products, catalogue banner, five chair cards, showroom/consultation panels, newsletter panel and five-column footer.
+- Responsive English homepage using a full showroom entrance hero, three collection paths, eight featured products, catalogue banner, five chair cards, showroom/consultation panels, newsletter panel and five-column footer.
 - Showroom gallery with 28 photographs, grouped by space on the existing `/projects` route. Optimized WebP copies live in `public/images/projects/`; the full-resolution JPG masters remain outside this repository.
 - Reference-style desktop header with category dropdowns, product search, brochure, account and cart links; mobile menu; floating cart and language links.
 - Searchable, categorized, paginated catalogue with the same 268 product records and 27 categories as the staging site. Desktop cards follow the staging shop order; public prices are currently hidden in favor of an inquiry flow.

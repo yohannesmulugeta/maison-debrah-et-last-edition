@@ -11,7 +11,7 @@
     "validate:content": "node scripts/validate-content.mjs",
     "build": "npm run validate:content && tsc -b && vite build",
     "preview": "vite preview",
-    "build:pages": "npm run validate:content && tsc -b && vite build --base /Maison-Debrah-et/"
+    "build:pages": "npm run validate:content && tsc -b && vite build --base /maison-debrah-et-last-edition/"
   },
   "dependencies": {
     "react": "^19.3.1",
