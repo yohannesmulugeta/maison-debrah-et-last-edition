@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { categories, categoryName, productCategory, productsInCategory, topCategories, type Product } from './data/catalog'
-import { projectGroups } from './data/projectImages'
+import { collectionShowroomScenes, homeShowroomScenes, projectGroups } from './data/projectImages'
 import siteData from './data/site.json'
 
 const ETHIOPIA_CONTACT = siteData.contact
@@ -478,22 +478,44 @@ function Home({ products }: { products: Product[] }) {
     .map((slug) => products.find((item) => item.slug === slug))
     .filter((item): item is Product => Boolean(item))
   const [newsletterStatus, setNewsletterStatus] = useState('')
+  const [activeSceneIndex, setActiveSceneIndex] = useState(0)
+  const activeScene = homeShowroomScenes[activeSceneIndex]
 
   return (
     <main id="main-content">
-      <section className="reference-hero concept-hero" aria-label="Maison Debrah showroom">
-        <picture className="concept-hero-media">
-          <source media="(max-width: 800px)" srcSet={asset('/images/projects/page-03-entry-1600.webp')} />
-          <img src={asset('/images/projects/page-03-entry-2400.webp')} alt="" fetchPriority="high" />
-        </picture>
-        <div className="concept-hero-copy">
-          <span className="concept-eyebrow">Our showroom</span>
-          <h1>{HOME_CONTENT.heroTitle}</h1>
-          <p>{HOME_CONTENT.heroDescription}</p>
-          <div className="concept-hero-actions">
-            <Link className="reference-button" to="/projects">{HOME_CONTENT.heroButton} <span aria-hidden="true">→</span></Link>
-            <Link className="concept-secondary-link" to="/collection/meubilair">Browse furniture</Link>
+      <section className="showroom-hero" aria-label="Maison Debrah showroom">
+        <div className="showroom-hero-main">
+          <picture className="showroom-hero-media">
+            <source media="(max-width: 800px)" srcSet={asset(`/images/projects/${activeScene.name}-1600.webp`)} />
+            <img
+              src={asset(`/images/projects/${activeScene.name}-2400.webp`)}
+              alt={activeScene.alt}
+              fetchPriority={activeSceneIndex === 0 ? 'high' : undefined}
+            />
+          </picture>
+          <div className="showroom-hero-copy">
+            <span className="concept-eyebrow" aria-live="polite">Our showroom · {activeScene.label}</span>
+            <h1>{HOME_CONTENT.heroTitle}</h1>
+            <p>{HOME_CONTENT.heroDescription}</p>
+            <div className="showroom-hero-actions">
+              <Link className="reference-button" to="/projects">{HOME_CONTENT.heroButton} <span aria-hidden="true">→</span></Link>
+              <Link className="concept-secondary-link" to="/collection/meubilair">Browse furniture</Link>
+            </div>
           </div>
+        </div>
+        <div className="showroom-hero-side" aria-label="More showroom views">
+          {homeShowroomScenes.map((scene, index) => index !== activeSceneIndex && (
+            <button
+              className="showroom-hero-preview"
+              type="button"
+              key={scene.name}
+              onClick={() => setActiveSceneIndex(index)}
+              aria-label={`View the ${scene.label.toLowerCase()} as the main showroom photo`}
+            >
+              <img src={asset(`/images/projects/${scene.name}-640.webp`)} alt="" decoding="async" />
+              <span><small>Explore space</small><strong>{scene.label}</strong><span aria-hidden="true">↗</span></span>
+            </button>
+          ))}
         </div>
       </section>
       <section className="collection-paths" aria-labelledby="collection-paths-title">
@@ -593,6 +615,31 @@ function Home({ products }: { products: Product[] }) {
   )
 }
 
+function CollectionHero({ slug }: { slug?: string }) {
+  const category = categories.find((item) => item.slug === slug)
+  const parent = topCategories.find((item) => item.id === category?.parent)
+  const scene = collectionShowroomScenes[slug || 'all'] || collectionShowroomScenes[parent?.slug || 'all'] || collectionShowroomScenes.all
+  const title = slug ? categoryName(slug) : 'Furniture & interiors'
+
+  return (
+    <header className="collection-hero">
+      <picture className="collection-hero-media">
+        <source media="(max-width: 800px)" srcSet={asset(`/images/projects/${scene.image}-640.webp`)} />
+        <img src={asset(`/images/projects/${scene.image}-1600.webp`)} alt={scene.alt} fetchPriority="high" />
+      </picture>
+      <nav className="collection-hero-breadcrumbs" aria-label="Breadcrumb">
+        <Link to="/">Home</Link><span aria-hidden="true">/</span>
+        {slug ? <><Link to="/shop">Collection</Link><span aria-hidden="true">/</span><span aria-current="page">{title}</span></> : <span aria-current="page">Collection</span>}
+      </nav>
+      <div className="collection-hero-copy">
+        <span>Inside our showroom</span>
+        <h1>{title}</h1>
+        <p>{scene.description}</p>
+      </div>
+    </header>
+  )
+}
+
 function Catalog({
   products,
   addToCart,
@@ -631,6 +678,7 @@ function Catalog({
 
   return (
     <main id="main-content" className="catalog-page">
+      <CollectionHero slug={slug} />
       <div className="catalog-layout">
         <aside className="catalog-sidebar" aria-label="Product categories">
           <form
@@ -681,10 +729,6 @@ function Catalog({
           </div>
         </aside>
         <div className="catalog-main">
-          <div className="catalog-main-heading">
-            <span>Maison Debrah collection</span>
-            <h1>{slug ? categoryName(slug) : 'Furniture & interiors'}</h1>
-          </div>
           <div className="catalog-tools">
             <label className="sort-control">
               <span className="visually-hidden">Sort collection</span>

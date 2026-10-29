@@ -83,3 +83,75 @@ export const projectGroups = [
     ],
   },
 ] as const
+
+export const homeShowroomScenes = [
+  {
+    name: 'page-03-entry',
+    label: 'Entrance',
+    alt: 'Maison Debrah showroom entrance with its sign above a circular metal screen',
+  },
+  {
+    name: 'page-24-room-4',
+    label: 'Living area',
+    alt: 'Maison Debrah showroom living area with pale sofas and a circular chandelier',
+  },
+  {
+    name: 'page-04-dining-area',
+    label: 'Dining area',
+    alt: 'Maison Debrah showroom dining area with a sculptural table and chandelier',
+  },
+] as const
+
+type CollectionShowroomScene = {
+  image: string
+  alt: string
+  description: string
+}
+
+export const collectionShowroomScenes: Record<string, CollectionShowroomScene> = {
+  all: {
+    image: 'page-24-room-4',
+    alt: 'Furnished living area inside the Maison Debrah showroom',
+    description: 'Browse furniture, lighting and decoration from the Maison Debrah collection.',
+  },
+  meubilair: {
+    image: 'page-22-room-3',
+    alt: 'Living area with sofas and tables inside the Maison Debrah showroom',
+    description: 'Explore furniture for living, dining and bedroom spaces.',
+  },
+  'banken-hoekbanken': {
+    image: 'page-24-room-4',
+    alt: 'Pale sofas arranged in the Maison Debrah showroom',
+    description: 'Browse sofas and sectionals alongside a view of our furnished showroom.',
+  },
+  'fauteuils-statement-stoelen': {
+    image: 'page-07-living-area',
+    alt: 'Seating and shelving in a Maison Debrah showroom living area',
+    description: 'Explore armchairs and statement seating inspired by complete interiors.',
+  },
+  eetkamertafels: {
+    image: 'page-04-dining-area',
+    alt: 'Dining table and chandelier inside the Maison Debrah showroom',
+    description: 'Explore dining tables with inspiration from our showroom dining spaces.',
+  },
+  'eetkamerstoelen-barkrukken': {
+    image: 'page-27-room-5',
+    alt: 'Dining chairs arranged around a table inside the Maison Debrah showroom',
+    description: 'Browse dining seating and see how we bring a dining room together.',
+  },
+  'bedden-hoofdborden': {
+    image: 'page-09-bedroom',
+    alt: 'Bedroom interior inside the Maison Debrah showroom',
+    description: 'Browse beds and headboards with inspiration from our bedroom spaces.',
+  },
+  verlichting: {
+    image: 'page-18-room-3',
+    alt: 'Sculptural chandelier above a Maison Debrah showroom living area',
+    description: 'Explore lighting and see it within a furnished showroom space.',
+  },
+  decoratie: {
+    image: 'page-30-room-6',
+    alt: 'Styled dining area with flowers and shelving in the Maison Debrah showroom',
+    description: 'Browse decorative pieces and discover how we style complete spaces.',
+  },
+}
