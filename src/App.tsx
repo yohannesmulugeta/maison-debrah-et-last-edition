@@ -225,9 +225,24 @@ function ProductImage({ src, alt, className = '' }: { src?: string; alt: string;
 function Header({ count }: { count: number }) {
   const [open, setOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [isScrolled, setIsScrolled] = useState(false)
   const menuToggle = useRef<HTMLButtonElement>(null)
   const mobileNav = useRef<HTMLElement>(null)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const isHome = location.pathname === '/'
+  const isTransparent = isHome && !isScrolled && !openMenu && !open
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30)
+    }
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [location.pathname])
+
   useEffect(() => {
     if (open) mobileNav.current?.querySelector<HTMLButtonElement>('.mobile-top button')?.focus()
   }, [open])
@@ -271,7 +286,7 @@ function Header({ count }: { count: number }) {
   return (
     <>
       <a className="skip-link" href="#main-content" onClick={skipToContent}>Skip to content</a>
-      <header className="site-header">
+      <header className={`site-header ${isHome ? 'site-header--home' : ''} ${isTransparent ? 'site-header--transparent' : 'site-header--solid'}`}>
         <div className="header-top">
           <form className="header-search" role="search" onSubmit={search}>
             <Icon name="search" />
