@@ -495,6 +495,10 @@ function Home({ products }: { products: Product[] }) {
   const [newsletterStatus, setNewsletterStatus] = useState('')
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
   const [slideCycleKey, setSlideCycleKey] = useState(0)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartX = useRef<number | null>(null)
+  const isMouseDown = useRef(false)
   const heroRef = useRef<HTMLElement>(null)
   const activeScene = homeShowroomScenes[activeSceneIndex]
 
@@ -503,19 +507,100 @@ function Home({ products }: { products: Product[] }) {
     setSlideCycleKey((k) => k + 1)
   }
 
+  const nextSlide = () => {
+    setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
+    setSlideCycleKey((k) => k + 1)
+  }
+
+  const prevSlide = () => {
+    setActiveSceneIndex((index) => (index - 1 + homeShowroomScenes.length) % homeShowroomScenes.length)
+    setSlideCycleKey((k) => k + 1)
+  }
+
+  const handleDragStart = (clientX: number) => {
+    dragStartX.current = clientX
+    isMouseDown.current = true
+    setIsDragging(true)
+  }
+
+  const handleDragMove = (clientX: number) => {
+    if (!isMouseDown.current || dragStartX.current === null) return
+    const diff = clientX - dragStartX.current
+    setDragOffset(diff)
+  }
+
+  const handleDragEnd = () => {
+    if (!isMouseDown.current) return
+    const diff = dragOffset
+    const threshold = 40
+
+    if (diff < -threshold) {
+      nextSlide()
+    } else if (diff > threshold) {
+      prevSlide()
+    }
+
+    dragStartX.current = null
+    isMouseDown.current = false
+    setIsDragging(false)
+    setDragOffset(0)
+  }
+
   useEffect(() => {
     const timer = window.setInterval(() => {
-      if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches || heroRef.current?.matches(':hover, :focus-within')) return
+      if (document.hidden) return
       setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
       setSlideCycleKey((k) => k + 1)
-    }, 6000)
+    }, 5500)
     return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        nextSlide()
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   return (
     <main id="main-content">
-      <section className="showroom-hero" aria-label="Maison Debrah showroom" aria-roledescription="carousel" ref={heroRef}>
-        <div className="showroom-hero-track" style={{ transform: `translateX(-${activeSceneIndex * 100}%)` }}>
+      <section
+        className={`showroom-hero ${isDragging ? 'is-dragging' : ''}`}
+        aria-label="Maison Debrah showroom"
+        aria-roledescription="carousel"
+        ref={heroRef}
+        onMouseDown={(e) => {
+          if ((e.target as HTMLElement).closest('a, button, input')) return
+          handleDragStart(e.clientX)
+        }}
+        onMouseMove={(e) => {
+          if (isMouseDown.current) handleDragMove(e.clientX)
+        }}
+        onMouseUp={handleDragEnd}
+        onMouseLeave={handleDragEnd}
+        onTouchStart={(e) => {
+          if ((e.target as HTMLElement).closest('a, button, input')) return
+          handleDragStart(e.touches[0].clientX)
+        }}
+        onTouchMove={(e) => {
+          if (isMouseDown.current) handleDragMove(e.touches[0].clientX)
+        }}
+        onTouchEnd={handleDragEnd}
+      >
+        <div
+          className="showroom-hero-track"
+          style={{
+            transform: dragOffset !== 0
+              ? `translateX(calc(-${activeSceneIndex * 100}% + ${dragOffset}px))`
+              : `translateX(-${activeSceneIndex * 100}%)`,
+            transition: isDragging ? 'none' : 'transform 0.75s cubic-bezier(0.25, 1, 0.5, 1)',
+          }}
+        >
           {homeShowroomScenes.map((scene, index) => (
             <picture className="showroom-hero-slide" key={scene.name} aria-hidden={index !== activeSceneIndex}>
               <source media="(max-width: 800px)" srcSet={asset(`/images/projects/${scene.name}-1600.webp`)} />
@@ -523,6 +608,24 @@ function Home({ products }: { products: Product[] }) {
             </picture>
           ))}
         </div>
+
+        <button
+          type="button"
+          className="hero-edge-nav hero-edge-prev"
+          onClick={prevSlide}
+          aria-label="Previous showroom slide"
+        >
+          ‹
+        </button>
+
+        <button
+          type="button"
+          className="hero-edge-nav hero-edge-next"
+          onClick={nextSlide}
+          aria-label="Next showroom slide"
+        >
+          ›
+        </button>
 
         <div className="showroom-hero-copy">
           <span className="concept-eyebrow">Flagship Showroom · {activeScene.label}</span>
