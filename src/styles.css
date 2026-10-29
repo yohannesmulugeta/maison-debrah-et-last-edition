@@ -939,17 +939,20 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
   flex-direction: column;
   justify-content: flex-end;
   min-height: 100svh;
-  height: 100svh;
+  min-height: 100vh;
+  height: auto;
   padding: calc(158px + clamp(16px, 2.5vw, 36px)) clamp(24px, 5vw, 80px) clamp(28px, 3.5vw, 48px);
-  overflow: hidden;
   background: #141f19;
   color: #fff;
+  touch-action: pan-y;
 }
 
 .showroom-hero-track {
   position: absolute;
   z-index: -2;
   inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .showroom-hero-slide {
@@ -1318,6 +1321,7 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
 @media (max-width: 800px) {
   .showroom-hero {
     min-height: 100svh;
+    min-height: 100vh;
     height: auto;
     padding: calc(115px + 16px) 20px 28px;
   }
