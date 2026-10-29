@@ -73,7 +73,7 @@ const menuGroups = [
     label: 'Projects',
     to: '/projects',
     items: [
-      { label: 'Interior projects', to: '/projects' },
+      { label: 'Showroom gallery', to: '/projects' },
       { label: 'Hospitality', to: '/hospitality' },
       { label: 'Home interiors', to: '/home-interiors' },
     ],
@@ -426,7 +426,7 @@ function ProductCard({
         <h3>
           <Link to={`/product/${product.slug}`}>{product.name}</Link>
         </h3>
-        <p className="product-inquire-status">Available on inquiry · Addis Ababa</p>
+        <p className="product-inquire-status">Ask about this piece</p>
       </div>
       <div className="card-actions-row">
         {onAddToCart && (
@@ -482,8 +482,8 @@ function Home({ products }: { products: Product[] }) {
     <main id="main-content">
       <section className="reference-hero concept-hero" aria-label="Maison Debrah showroom">
         <picture className="concept-hero-media">
-          <source media="(max-width: 800px)" srcSet={asset('/images/projects/page-24-room-4-1600.webp')} />
-          <img src={asset('/images/projects/page-24-room-4-2400.webp')} alt="" fetchPriority="high" />
+          <source media="(max-width: 800px)" srcSet={asset('/images/projects/page-03-entry-1600.webp')} />
+          <img src={asset('/images/projects/page-03-entry-2400.webp')} alt="" fetchPriority="high" />
         </picture>
         <div className="concept-hero-copy">
           <span className="concept-eyebrow">Our showroom</span>
@@ -491,27 +491,31 @@ function Home({ products }: { products: Product[] }) {
           <p>{HOME_CONTENT.heroDescription}</p>
           <div className="concept-hero-actions">
             <Link className="reference-button" to="/projects">{HOME_CONTENT.heroButton} <span aria-hidden="true">→</span></Link>
-            <Link className="concept-secondary-link" to="/shop">Shop collection</Link>
+            <Link className="concept-secondary-link" to="/collection/meubilair">Browse furniture</Link>
           </div>
         </div>
       </section>
-      <section className="reference-editorials" aria-label="Featured collections">
-        <Link
-          to="/collection/verlichting"
-          style={{ backgroundImage: `linear-gradient(100deg,rgba(42,53,47,.4),rgba(102,93,86,.1)),url(${reference('4.jpg')})` }}
-        >
-          <span>{HOME_CONTENT.lightingEyebrow}</span>
-          <h2>{HOME_CONTENT.lightingTitle}</h2>
-          <b>Discover →</b>
-        </Link>
-        <Link
-          to="/collection/banken-hoekbanken"
-          style={{ backgroundImage: `linear-gradient(100deg,rgba(42,53,47,.4),rgba(102,93,86,.1)),url(${reference('7.jpg')})` }}
-        >
-          <span>{HOME_CONTENT.sofasEyebrow}</span>
-          <h2>{HOME_CONTENT.sofasTitle}</h2>
-          <b>View →</b>
-        </Link>
+      <section className="collection-paths" aria-labelledby="collection-paths-title">
+        <div className="collection-paths-heading">
+          <span>Explore Maison Debrah</span>
+          <h2 id="collection-paths-title">Explore by category</h2>
+        </div>
+        <div className="collection-paths-grid">
+          {[
+            { name: 'Furniture', slug: 'meubilair', image: '5.jpg' },
+            { name: 'Lighting', slug: 'verlichting', image: '4.jpg' },
+            { name: 'Decoration', slug: 'decoratie', image: '10.jpg' },
+          ].map((category) => (
+            <Link
+              key={category.slug}
+              to={`/collection/${category.slug}`}
+              style={{ backgroundImage: `linear-gradient(0deg,rgba(23,36,29,.72),rgba(23,36,29,.05) 65%),url(${reference(category.image)})` }}
+            >
+              <span>{category.name}</span>
+              <b>Explore collection <span aria-hidden="true">→</span></b>
+            </Link>
+          ))}
+        </div>
       </section>
       <section className="reference-featured">
         <h2>{HOME_CONTENT.featuredTitle}</h2>
@@ -545,16 +549,14 @@ function Home({ products }: { products: Product[] }) {
         </div>
       </section>
       <section className="reference-callouts">
-        <a
-          href={`https://wa.me/${ETHIOPIA_CONTACT.whatsappRaw}?text=Hello%20Maison%20Debrah%20Ethiopia,%20I%20would%20like%20to%20book%20a%20showroom%20visit.`}
-          target="_blank"
-          rel="noreferrer"
-          style={{ backgroundImage: `linear-gradient(100deg,rgba(42,53,47,.4),rgba(102,93,86,.1)),url(${reference('10.jpg')})` }}
+        <Link
+          to="/projects"
+          style={{ backgroundImage: `linear-gradient(0deg,rgba(23,36,29,.78),rgba(23,36,29,.05) 75%),url(${asset('/images/projects/page-24-room-4-1600.webp')})` }}
         >
           <span>{HOME_CONTENT.showroomEyebrow}</span>
           <h2>{HOME_CONTENT.showroomTitle}</h2>
-          <b>Book via WhatsApp →</b>
-        </a>
+          <b>See the showroom →</b>
+        </Link>
         <Link
           to="/design-consult"
           style={{ backgroundImage: `linear-gradient(100deg,rgba(42,53,47,.4),rgba(102,93,86,.1)),url(${reference('11.jpg')})` }}
@@ -628,7 +630,6 @@ function Catalog({
 
   return (
     <main id="main-content" className="catalog-page">
-      <h1 className="visually-hidden">{slug ? categoryName(slug) : 'Collection'}</h1>
       <div className="catalog-layout">
         <aside className="catalog-sidebar" aria-label="Product categories">
           <form
@@ -679,6 +680,10 @@ function Catalog({
           </div>
         </aside>
         <div className="catalog-main">
+          <div className="catalog-main-heading">
+            <span>Maison Debrah collection</span>
+            <h1>{slug ? categoryName(slug) : 'Furniture & interiors'}</h1>
+          </div>
           <div className="catalog-tools">
             <label className="sort-control">
               <span className="visually-hidden">Sort collection</span>
@@ -797,8 +802,12 @@ function ProductDetails({
         </div>
         <div className="product-info">
           <h1>{product.name}</h1>
-          {product.summary && <p className="product-summary">{product.summary}</p>}
-          <div className="inquiry-badge">Custom Crafted · Inquire for Availability in Ethiopia</div>
+          <div className="inquiry-badge">Ask about this piece</div>
+          {product.categories[0] && (
+            <p className="product-meta">
+              Collection: <Link to={`/collection/${product.categories[0].slug}`}>{productCategory(product)}</Link>
+            </p>
+          )}
           <div className="add-cart">
             <label htmlFor="product-quantity">Quantity</label>
             <input
@@ -828,13 +837,9 @@ function ProductDetails({
               Added to your cart. <Link to="/cart">View inquiry cart →</Link>
             </p>
           )}
-          {product.categories[0] && (
-            <p className="product-meta">
-              Collection: <Link to={`/collection/${product.categories[0].slug}`}>{productCategory(product)}</Link>
-            </p>
-          )}
+          {product.summary && <p className="product-summary">{product.summary}</p>}
           <p className="commerce-note">
-            White-glove delivery, custom finish selection, and installation available for Addis Ababa penthouses, residences, and hospitality projects.
+            Contact Maison Debrah Ethiopia for details, availability and delivery information.
           </p>
         </div>
       </div>
