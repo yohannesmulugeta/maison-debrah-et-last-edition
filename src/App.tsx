@@ -570,6 +570,7 @@ function Home({ products }: { products: Product[] }) {
   const [slideCycleKey, setSlideCycleKey] = useState(0)
   const [showHotspots, setShowHotspots] = useState(true)
   const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
   const heroRef = useRef<HTMLElement>(null)
   const activeScene = homeShowroomScenes[activeSceneIndex]
   const currentHotspots = SHOWROOM_HOTSPOTS[activeScene.name] || []
@@ -598,15 +599,44 @@ function Home({ products }: { products: Product[] }) {
     setActiveHotspotId(null)
   }, [])
 
+  // Auto-advance timer: pauses when user hovers or is reading a card; resets fully on manual navigation
   useEffect(() => {
+    if (isPaused || activeHotspotId !== null) return
+
     const timer = window.setInterval(() => {
       if (document.hidden) return
       setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
       setSlideCycleKey((k) => k + 1)
       setActiveHotspotId(null)
     }, 6000)
+
     return () => window.clearInterval(timer)
-  }, [])
+  }, [isPaused, activeHotspotId, slideCycleKey])
+
+  // Close open card on outside click or Escape key
+  useEffect(() => {
+    if (!activeHotspotId) return
+
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('.hero-hotspot-pin-wrap')) {
+        setActiveHotspotId(null)
+      }
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveHotspotId(null)
+      }
+    }
+
+    window.addEventListener('click', handleOutsideClick)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('click', handleOutsideClick)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [activeHotspotId])
 
   // Keyboard navigation on hero: ArrowLeft / ArrowRight to switch showroom scenes
   useEffect(() => {
@@ -662,6 +692,8 @@ function Home({ products }: { products: Product[] }) {
         aria-label="Maison Debrah showroom"
         aria-roledescription="carousel"
         ref={heroRef}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
       >
         <div className="showroom-hero-track">
           {homeShowroomScenes.map((scene, index) => (
@@ -681,17 +713,25 @@ function Home({ products }: { products: Product[] }) {
           <div className="hero-hotspots-layer" aria-label="Key architectural pieces in this scene">
             {currentHotspots.map((spot) => {
               const isExpanded = activeHotspotId === spot.id
+              const isTopHalf = spot.y < 45
               const isRightAligned = spot.x > 60
+              const isLeftAligned = spot.x < 35
+              const hAlign = isRightAligned ? 'align-right' : isLeftAligned ? 'align-left' : 'align-center'
+              const vAlign = isTopHalf ? 'place-bottom' : 'place-top'
+
               return (
                 <div
                   key={spot.id}
-                  className={`hero-hotspot-pin-wrap ${isExpanded ? 'active' : ''} ${isRightAligned ? 'align-right' : ''}`}
+                  className={`hero-hotspot-pin-wrap ${isExpanded ? 'active' : ''} ${vAlign} ${hAlign}`}
                   style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
                 >
                   <button
                     type="button"
                     className="hero-hotspot-pin"
-                    onClick={() => setActiveHotspotId(isExpanded ? null : spot.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActiveHotspotId(isExpanded ? null : spot.id)
+                    }}
                     aria-label={`${spot.label} (${spot.category})`}
                     aria-expanded={isExpanded}
                   >
@@ -705,7 +745,12 @@ function Home({ products }: { products: Product[] }) {
                   </button>
 
                   {isExpanded && (
-                    <div className="hero-hotspot-card" role="dialog" aria-label={spot.label}>
+                    <div
+                      className="hero-hotspot-card"
+                      role="dialog"
+                      aria-label={spot.label}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="hotspot-card-top">
                         <span className="hotspot-card-category">{spot.category}</span>
                         <button
@@ -750,7 +795,7 @@ function Home({ products }: { products: Product[] }) {
 
         <div className="showroom-hero-copy">
           <div className="concept-eyebrow">
-            <span className="eyebrow-flag">Flagship Showroom · {activeScene.label}</span>
+            <span className="eyebrow-flag">Addis Ababa Flagship · {activeScene.label}</span>
             <span className="eyebrow-pill">{sceneHighlights[activeScene.name]}</span>
             <button
               type="button"
@@ -759,17 +804,17 @@ function Home({ products }: { products: Product[] }) {
                 setShowHotspots(!showHotspots)
                 setActiveHotspotId(null)
               }}
-              aria-label={showHotspots ? 'Hide architectural hotspots' : 'Show architectural hotspots'}
+              aria-label={showHotspots ? 'Hide architectural details' : 'Show architectural details'}
             >
               <span className="eyebrow-toggle-icon" aria-hidden="true">✦</span>
-              <span>{showHotspots ? 'Key Pieces' : 'Explore Pieces'}</span>
+              <span>{showHotspots ? 'Details' : 'Show Details'}</span>
             </button>
           </div>
           <h1>{HOME_CONTENT.heroTitle}</h1>
           <p>{HOME_CONTENT.heroDescription}</p>
           <div className="showroom-hero-actions">
             <Link className="reference-button hero-primary-btn" to="/projects">
-              {HOME_CONTENT.heroButton} <span aria-hidden="true">→</span>
+              View showroom projects <span aria-hidden="true">→</span>
             </Link>
             <Link className="hero-secondary-btn" to="/collection/meubilair">
               Browse collection
@@ -807,12 +852,14 @@ function Home({ products }: { products: Product[] }) {
             className="hero-scroll-prompt"
             onClick={() => {
               const target = document.getElementById('collection-paths')
-              target?.scrollIntoView({ behavior: 'smooth' })
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth' })
+              }
             }}
-            aria-label="Scroll to discover furniture collection"
+            aria-label="Scroll down to browse collection"
           >
             <span className="hero-scroll-line" />
-            <span>Scroll to explore</span>
+            <span>Scroll to view</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
