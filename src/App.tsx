@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { categories, categoryName, productCategory, productsInCategory, topCategories, type Product } from './data/catalog'
 import { collectionShowroomScenes, homeShowroomScenes, projectGroups } from './data/projectImages'
@@ -496,12 +496,29 @@ function Home({ products }: { products: Product[] }) {
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
   const [slideCycleKey, setSlideCycleKey] = useState(0)
   const heroRef = useRef<HTMLElement>(null)
+  const lastWheelTimeRef = useRef(0)
   const activeScene = homeShowroomScenes[activeSceneIndex]
+
+  const sceneHighlights: Record<string, string> = {
+    'page-03-entry': 'Grand Portals · Calacatta Marble',
+    'page-24-room-4': 'Bespoke Seating · Ambient Lighting',
+    'page-04-dining-area': 'Sculptural Quartzite · Statement Chandelier',
+  }
 
   const goToSlide = (index: number) => {
     setActiveSceneIndex(index)
     setSlideCycleKey((k) => k + 1)
   }
+
+  const nextSlide = useCallback(() => {
+    setActiveSceneIndex((idx) => (idx + 1) % homeShowroomScenes.length)
+    setSlideCycleKey((k) => k + 1)
+  }, [])
+
+  const prevSlide = useCallback(() => {
+    setActiveSceneIndex((idx) => (idx - 1 + homeShowroomScenes.length) % homeShowroomScenes.length)
+    setSlideCycleKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -511,6 +528,88 @@ function Home({ products }: { products: Product[] }) {
     }, 6000)
     return () => window.clearInterval(timer)
   }, [])
+
+  // Interactive mouse wheel scroll: transitions scenes down/up, then smoothly flows down to content
+  useEffect(() => {
+    const heroEl = heroRef.current
+    if (!heroEl) return
+
+    const onWheel = (e: WheelEvent) => {
+      if (window.scrollY > 15) return
+      const now = Date.now()
+      if (now - lastWheelTimeRef.current < 650) {
+        if ((e.deltaY > 0 && activeSceneIndex < homeShowroomScenes.length - 1) || (e.deltaY < 0 && activeSceneIndex > 0)) {
+          e.preventDefault()
+        }
+        return
+      }
+
+      if (e.deltaY > 30) {
+        if (activeSceneIndex < homeShowroomScenes.length - 1) {
+          e.preventDefault()
+          lastWheelTimeRef.current = now
+          goToSlide(activeSceneIndex + 1)
+        }
+        // When on the final slide (Dining area), natural wheel continues down to #collection-paths!
+      } else if (e.deltaY < -30) {
+        if (activeSceneIndex > 0) {
+          e.preventDefault()
+          lastWheelTimeRef.current = now
+          goToSlide(activeSceneIndex - 1)
+        }
+      }
+    }
+
+    heroEl.addEventListener('wheel', onWheel, { passive: false })
+    return () => heroEl.removeEventListener('wheel', onWheel)
+  }, [activeSceneIndex])
+
+  // Keyboard navigation on hero: ArrowLeft / ArrowRight to switch showroom scenes
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (window.scrollY > 200) return
+      if (e.key === 'ArrowRight') {
+        nextSlide()
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [nextSlide, prevSlide])
+
+  // Horizontal touch swipe to change showroom scenes on mobile
+  useEffect(() => {
+    const heroEl = heroRef.current
+    if (!heroEl) return
+
+    let startX = 0
+    let startY = 0
+
+    const onTouchStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const diffX = e.changedTouches[0].clientX - startX
+      const diffY = e.changedTouches[0].clientY - startY
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 45) {
+        if (diffX < 0) {
+          nextSlide()
+        } else {
+          prevSlide()
+        }
+      }
+    }
+
+    heroEl.addEventListener('touchstart', onTouchStart, { passive: true })
+    heroEl.addEventListener('touchend', onTouchEnd, { passive: true })
+    return () => {
+      heroEl.removeEventListener('touchstart', onTouchStart)
+      heroEl.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [nextSlide, prevSlide])
 
   return (
     <main id="main-content">
@@ -533,8 +632,29 @@ function Home({ products }: { products: Product[] }) {
           ))}
         </div>
 
+        <button
+          type="button"
+          className="hero-arrow hero-arrow--prev"
+          onClick={prevSlide}
+          aria-label="Previous showroom scene"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        </button>
+
+        <button
+          type="button"
+          className="hero-arrow hero-arrow--next"
+          onClick={nextSlide}
+          aria-label="Next showroom scene"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
+        </button>
+
         <div className="showroom-hero-copy">
-          <span className="concept-eyebrow">Flagship Showroom · {activeScene.label}</span>
+          <div className="concept-eyebrow">
+            <span className="eyebrow-flag">Flagship Showroom · {activeScene.label}</span>
+            <span className="eyebrow-pill">{sceneHighlights[activeScene.name]}</span>
+          </div>
           <h1>{HOME_CONTENT.heroTitle}</h1>
           <p>{HOME_CONTENT.heroDescription}</p>
           <div className="showroom-hero-actions">
@@ -571,6 +691,22 @@ function Home({ products }: { products: Product[] }) {
               </button>
             ))}
           </div>
+
+          <button
+            type="button"
+            className="hero-scroll-prompt"
+            onClick={() => {
+              const target = document.getElementById('collection-paths')
+              target?.scrollIntoView({ behavior: 'smooth' })
+            }}
+            aria-label="Scroll to discover furniture collection"
+          >
+            <span className="hero-scroll-line" />
+            <span>Scroll to explore</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
         </div>
       </section>
       <section id="collection-paths" className="collection-paths" aria-labelledby="collection-paths-title">

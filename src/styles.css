@@ -1009,12 +1009,9 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
 .concept-eyebrow {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
-  color: #e8ded1;
-  font: 600 12px Inter, Arial, sans-serif;
-  letter-spacing: .22em;
-  text-transform: uppercase;
 }
 
 .concept-eyebrow::before {
@@ -1023,6 +1020,28 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
   width: 28px;
   height: 1.5px;
   background: #ad8e5c;
+}
+
+.eyebrow-flag {
+  color: #e8ded1;
+  font: 600 12px Inter, Arial, sans-serif;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f7eedf;
+  font: 500 11px Inter, Arial, sans-serif;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .showroom-hero h1 {
@@ -1189,6 +1208,124 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
   .showroom-hero-track { transition: none; }
   .showroom-hero-slide img { transition: none; transform: none; }
   .hero-tab-fill { animation: none !important; }
+}
+
+/* Edge Chevron Controls */
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(14, 23, 18, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.7;
+}
+
+.hero-arrow:hover {
+  opacity: 1;
+  background: rgba(173, 142, 92, 0.85);
+  border-color: #ad8e5c;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.hero-arrow--prev {
+  left: clamp(16px, 2.5vw, 40px);
+}
+
+.hero-arrow--next {
+  right: clamp(16px, 2.5vw, 40px);
+}
+
+.hero-arrow svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Luxury Scroll Indicator */
+.hero-scroll-prompt {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font: 500 11px Inter, Arial, sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero-scroll-prompt:hover {
+  color: #ffffff;
+}
+
+.hero-scroll-prompt:hover .hero-scroll-line {
+  background: #ad8e5c;
+  height: 38px;
+}
+
+.hero-scroll-line {
+  display: inline-block;
+  width: 1.5px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-scroll-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: #ad8e5c;
+  animation: heroScrollDrop 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes heroScrollDrop {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
+.hero-scroll-prompt svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.3s ease;
+}
+
+.hero-scroll-prompt:hover svg {
+  transform: translateY(3px);
+  color: #ad8e5c;
+}
+
+@media (max-width: 768px) {
+  .hero-arrow {
+    display: none;
+  }
+  .hero-scroll-prompt {
+    display: none;
+  }
 }
 
 .concept-intro { max-width: 780px; color: #4a5650; font-size: 17px; }
