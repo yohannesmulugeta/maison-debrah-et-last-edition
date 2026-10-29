@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { categories, categoryName, productCategory, productsInCategory, topCategories, type Product } from './data/catalog'
+import { projectGroups } from './data/projectImages'
 import siteData from './data/site.json'
 
 const ETHIOPIA_CONTACT = siteData.contact
@@ -479,18 +480,19 @@ function Home({ products }: { products: Product[] }) {
 
   return (
     <main id="main-content">
-      <section
-        className="reference-hero"
-        style={{ backgroundImage: `linear-gradient(100deg,rgba(42,53,47,.4) 30%,rgba(102,93,86,.1)),url(${reference('DSCF7872.jpg')})` }}
-      >
-        <div>
+      <section className="reference-hero concept-hero" aria-label="Maison Debrah showroom">
+        <picture className="concept-hero-media">
+          <source media="(max-width: 800px)" srcSet={asset('/images/projects/page-24-room-4-1600.webp')} />
+          <img src={asset('/images/projects/page-24-room-4-2400.webp')} alt="" fetchPriority="high" />
+        </picture>
+        <div className="concept-hero-copy">
+          <span className="concept-eyebrow">Our showroom</span>
           <h1>{HOME_CONTENT.heroTitle}</h1>
-          <p style={{ color: '#f3f5f3', fontSize: '15px', maxWidth: '520px', marginBottom: '25px', lineHeight: 1.6 }}>
-            {HOME_CONTENT.heroDescription}
-          </p>
-          <Link className="reference-button" to="/shop">
-            {HOME_CONTENT.heroButton} <span aria-hidden="true">→</span>
-          </Link>
+          <p>{HOME_CONTENT.heroDescription}</p>
+          <div className="concept-hero-actions">
+            <Link className="reference-button" to="/projects">{HOME_CONTENT.heroButton} <span aria-hidden="true">→</span></Link>
+            <Link className="concept-secondary-link" to="/shop">Shop collection</Link>
+          </div>
         </div>
       </section>
       <section className="reference-editorials" aria-label="Featured collections">
@@ -869,17 +871,32 @@ function About() {
 
 function Projects() {
   return (
-    <StandardPage title="Interior & Hospitality Projects">
-      <div className="page-image">
-        <img src={asset('/images/editorial-4.jpg')} alt="Interior featuring Maison Debrah furniture" />
-      </div>
-      <h2>Addis Ababa Residential & Hospitality Projects</h2>
-      <p>
-        We collaborate with leading architects, property developers, and private homeowners across Addis Ababa to curate statement furnishings and comprehensive interior packages.
-      </p>
-      <Link className="reference-button" to="/contact">
-        Schedule project consultation
-      </Link>
+    <StandardPage title="Inside the Maison Debrah showroom">
+      <p className="concept-intro">Explore photographs of our completed showroom, from the entrance and reception to the furnished living, dining and bedroom spaces.</p>
+      {projectGroups.map((group) => (
+        <section className="concept-group" key={group.title} aria-label={group.title}>
+          <h2>{group.title}</h2>
+          <div className={`concept-gallery${group.images.length === 1 ? ' concept-gallery--single' : ''}`}>
+            {group.images.map((image, index) => (
+              <figure className="concept-card" key={image.name}>
+                <a href={asset(`/images/projects/${image.name}-1600.webp`)} target="_blank" rel="noreferrer">
+                  <img
+                    src={asset(`/images/projects/${image.name}-640.webp`)}
+                    alt={image.alt}
+                    width="640"
+                    height="380"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span>View full image <span aria-hidden="true">↗</span></span>
+                </a>
+                <figcaption>{group.title} · View {index + 1}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      ))}
+      <Link className="reference-button concept-contact" to="/contact">Plan a showroom visit</Link>
     </StandardPage>
   )
 }

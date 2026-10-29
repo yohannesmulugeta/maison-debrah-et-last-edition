@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="description" content="Maison Debrah Ethiopia — European luxury designer furniture, architectural lighting, and bespoke interior collections for Addis Ababa." />
+    <link rel="icon" href="%BASE_URL%images/logo.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&family=Sofia+Sans:wght@500&display=swap" />
@@ -13,7 +14,9 @@
         const heroPreload = document.createElement('link');
         heroPreload.rel = 'preload';
         heroPreload.as = 'image';
-        heroPreload.href = '%BASE_URL%images/reference-home/DSCF7872.jpg';
+        heroPreload.href = matchMedia('(max-width: 800px)').matches
+          ? '%BASE_URL%images/projects/page-24-room-4-1600.webp'
+          : '%BASE_URL%images/projects/page-24-room-4-2400.webp';
         heroPreload.fetchPriority = 'high';
         document.head.append(heroPreload);
       }

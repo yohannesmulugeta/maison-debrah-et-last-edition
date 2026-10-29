@@ -899,3 +899,77 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
     height: 38px;
   }
 }
+
+.concept-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  height: clamp(520px, 43vw, 650px);
+  align-items: center;
+  padding: 48px clamp(28px, 6vw, 100px);
+  background: #26322d;
+}
+.concept-hero-media,
+.concept-hero-media img,
+.concept-hero::after {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.concept-hero-media { z-index: -2; }
+.concept-hero-media img { object-fit: cover; object-position: center 52%; }
+.concept-hero::after {
+  content: '';
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(15, 28, 22, .8), rgba(15, 28, 22, .43) 48%, rgba(15, 28, 22, .05));
+}
+.concept-hero-copy { max-width: 640px; }
+.concept-eyebrow {
+  display: block;
+  margin-bottom: 20px;
+  color: #f4e8d5;
+  font: 600 12px Inter, Arial, sans-serif;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.concept-hero h1 { max-width: 620px; margin-bottom: 20px; font-size: clamp(42px, 4.8vw, 70px); }
+.concept-hero p { max-width: 500px; margin-bottom: 30px; color: #f5f4ef; font-size: 16px; line-height: 1.6; }
+.concept-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; }
+.concept-hero .reference-button { width: auto; min-height: 48px; background: #fff; border-color: #fff; color: #26322d; font: 600 13px Inter, Arial, sans-serif; }
+.concept-hero .reference-button:hover { background: #eee9df; border-color: #eee9df; }
+.concept-secondary-link { color: #fff; font: 600 13px Inter, Arial, sans-serif; text-decoration: underline; text-underline-offset: 5px; }
+.concept-secondary-link:hover { color: #f4e8d5; }
+
+.concept-intro { max-width: 780px; color: #4a5650; font-size: 17px; }
+.concept-group { margin-top: 58px; }
+.concept-group h2 { margin-bottom: 22px; font-size: clamp(27px, 3vw, 35px); }
+.concept-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
+.concept-gallery--single { grid-template-columns: 1fr; }
+.concept-card { min-width: 0; margin: 0; }
+.concept-card a { position: relative; display: block; overflow: hidden; background: #e8e2d9; }
+.concept-card img { display: block; width: 100%; height: auto; aspect-ratio: 1.7; object-fit: cover; transition: transform .25s; }
+.concept-card a:hover img { transform: scale(1.025); }
+.concept-card a > span {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  padding: 8px 12px;
+  background: rgba(22, 35, 27, .88);
+  color: #fff;
+  font: 600 11px Inter, Arial, sans-serif;
+}
+.concept-card figcaption { margin-top: 10px; color: #576158; font: 600 12px Inter, Arial, sans-serif; }
+.concept-contact { margin-top: 60px; }
+
+@media (max-width: 700px) {
+  .concept-hero { height: 540px; margin: 0 6px; padding: 35px 24px; align-items: flex-end; }
+  .concept-hero-media img { object-position: center; }
+  .concept-hero::after { background: linear-gradient(0deg, rgba(15, 28, 22, .9), rgba(15, 28, 22, .35) 68%, rgba(15, 28, 22, .08)); }
+  .concept-hero h1 { font-size: clamp(35px, 8.5vw, 48px); }
+  .concept-hero p { font-size: 14px; }
+  .concept-gallery { grid-template-columns: 1fr; }
+}
+@media (max-width: 380px) {
+  .concept-hero { padding-bottom: 90px; }
+}

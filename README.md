@@ -34,7 +34,8 @@ The repository no longer contains Pages CMS configuration or links. The original
 
 ## What is implemented
 
-- Responsive English homepage using the reference's hero, paired collection panels, eight featured products, catalogue banner, five chair cards, showroom/consultation panels, newsletter panel and five-column footer.
+- Responsive English homepage using a Maison Debrah showroom hero, paired collection panels, eight featured products, catalogue banner, five chair cards, showroom/consultation panels, newsletter panel and five-column footer.
+- Showroom gallery with 28 photographs, grouped by space on the existing `/projects` route. Optimized WebP copies live in `public/images/projects/`; the full-resolution JPG masters remain outside this repository.
 - Reference-style desktop header with category dropdowns, product search, brochure, account and cart links; mobile menu; floating cart and language links.
 - Searchable, categorized, paginated catalogue with the same 268 product records and 27 categories as the staging site. Desktop cards follow the staging shop order; public prices are currently hidden in favor of an inquiry flow.
 - Product detail pages with the reference site's names, images, available summary text, category and related products. Product and collection names are unchanged. A browser-stored cart supports add, quantity, remove and persistence across refreshes.
