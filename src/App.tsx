@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { categories, categoryName, productCategory, productsInCategory, topCategories, type Product } from './data/catalog'
 import { collectionShowroomScenes, homeShowroomScenes, projectGroups } from './data/projectImages'
@@ -485,79 +485,6 @@ const chairImages: Record<string, string> = {
   elowen: 'ADC200451-400x400.jpg',
 }
 
-interface ShowroomHotspot {
-  id: string
-  x: number
-  y: number
-  label: string
-  category: string
-  description: string
-  link: string
-}
-
-const SHOWROOM_HOTSPOTS: Record<string, ShowroomHotspot[]> = {
-  'page-03-entry': [
-    {
-      id: 'h-bronze-portal',
-      x: 46,
-      y: 52,
-      label: 'Grand Fluted Bronze Portal',
-      category: 'Architectural Millwork',
-      description: 'Bespoke hand-patinated bronze framing with floor-to-ceiling pivot architecture.',
-      link: '/projects',
-    },
-    {
-      id: 'h-calacatta-console',
-      x: 74,
-      y: 72,
-      label: 'Calacatta Viola Pedestal',
-      category: 'Sculptural Marble',
-      description: 'Hand-finished Italian marble plinth crafted for museum-grade private residences.',
-      link: '/collection/salontafels',
-    },
-  ],
-  'page-24-room-4': [
-    {
-      id: 'h-boucle-sofa',
-      x: 36,
-      y: 66,
-      label: 'Bouclé Low-Lounge Sectional',
-      category: 'Seating & Sofas',
-      description: 'Modular architecture tailored in heavyweight ivory bouclé with feather-blend cushioning.',
-      link: '/collection/banken-hoekbanken',
-    },
-    {
-      id: 'h-orbital-lighting',
-      x: 62,
-      y: 26,
-      label: 'Orbital Brass Chandelier',
-      category: 'Architectural Lighting',
-      description: 'Hand-burnished solid brass rings casting ambient architectural illumination.',
-      link: '/collection/verlichting',
-    },
-  ],
-  'page-04-dining-area': [
-    {
-      id: 'h-quartzite-table',
-      x: 48,
-      y: 68,
-      label: 'Sculptural Quartzite Monolith',
-      category: 'Dining Tables',
-      description: 'Custom 10-guest dining monolith carved from rare Brazilian quartzite with chamfered edge.',
-      link: '/collection/eetkamertafels',
-    },
-    {
-      id: 'h-murano-chandelier',
-      x: 52,
-      y: 20,
-      label: 'Murano Glass Tiered Cascade',
-      category: 'Statement Lighting',
-      description: 'Mouth-blown fluted amber and smoky glass prisms suspended on patinated bronze structure.',
-      link: '/collection/verlichting',
-    },
-  ],
-}
-
 function Home({ products }: { products: Product[] }) {
   const featured = ['caslen', 'ravlen', 'savel', 'marenza', 'orvella', 'vin-gris', 'chasson', 'arvis-2']
     .map((slug) => products.find((item) => item.slug === slug))
@@ -567,90 +494,31 @@ function Home({ products }: { products: Product[] }) {
     .filter((item): item is Product => Boolean(item))
   const [newsletterStatus, setNewsletterStatus] = useState('')
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
-  const [slideCycleKey, setSlideCycleKey] = useState(0)
-  const [showHotspots, setShowHotspots] = useState(true)
-  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null)
-  const [isPaused, setIsPaused] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const [hasFocus, setHasFocus] = useState(false)
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false)
+  const [playThroughInteraction, setPlayThroughInteraction] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const heroRef = useRef<HTMLElement>(null)
   const activeScene = homeShowroomScenes[activeSceneIndex]
-  const currentHotspots = SHOWROOM_HOTSPOTS[activeScene.name] || []
+  const autoPaused = isManuallyPaused || (!playThroughInteraction && (isHovered || hasFocus || prefersReducedMotion))
+  const showPlayControl = isManuallyPaused || (prefersReducedMotion && !playThroughInteraction)
 
-  const sceneHighlights: Record<string, string> = {
-    'page-03-entry': 'Grand Portals · Calacatta Marble',
-    'page-24-room-4': 'Bespoke Seating · Ambient Lighting',
-    'page-04-dining-area': 'Sculptural Quartzite · Statement Chandelier',
-  }
-
-  const goToSlide = (index: number) => {
-    setActiveSceneIndex(index)
-    setSlideCycleKey((k) => k + 1)
-    setActiveHotspotId(null)
-  }
-
-  const nextSlide = useCallback(() => {
-    setActiveSceneIndex((idx) => (idx + 1) % homeShowroomScenes.length)
-    setSlideCycleKey((k) => k + 1)
-    setActiveHotspotId(null)
-  }, [])
-
-  const prevSlide = useCallback(() => {
-    setActiveSceneIndex((idx) => (idx - 1 + homeShowroomScenes.length) % homeShowroomScenes.length)
-    setSlideCycleKey((k) => k + 1)
-    setActiveHotspotId(null)
-  }, [])
-
-  // Auto-advance timer: pauses when user hovers or is reading a card; resets fully on manual navigation
   useEffect(() => {
-    if (isPaused || activeHotspotId !== null) return
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setPrefersReducedMotion(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
 
+  useEffect(() => {
+    if (autoPaused) return
     const timer = window.setInterval(() => {
-      if (document.hidden) return
-      setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
-      setSlideCycleKey((k) => k + 1)
-      setActiveHotspotId(null)
+      if (!document.hidden) setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
     }, 6000)
-
     return () => window.clearInterval(timer)
-  }, [isPaused, activeHotspotId, slideCycleKey])
-
-  // Close open card on outside click or Escape key
-  useEffect(() => {
-    if (!activeHotspotId) return
-
-    const handleOutsideClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      if (!target.closest('.hero-hotspot-pin-wrap')) {
-        setActiveHotspotId(null)
-      }
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setActiveHotspotId(null)
-      }
-    }
-
-    window.addEventListener('click', handleOutsideClick)
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('click', handleOutsideClick)
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [activeHotspotId])
-
-  // Keyboard navigation on hero: ArrowLeft / ArrowRight to switch showroom scenes
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (window.scrollY > 200) return
-      if (e.key === 'ArrowRight') {
-        nextSlide()
-      } else if (e.key === 'ArrowLeft') {
-        prevSlide()
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [nextSlide, prevSlide])
+  }, [activeSceneIndex, autoPaused])
 
   // Horizontal touch swipe to change showroom scenes on mobile
   useEffect(() => {
@@ -670,9 +538,9 @@ function Home({ products }: { products: Product[] }) {
       const diffY = e.changedTouches[0].clientY - startY
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 45) {
         if (diffX < 0) {
-          nextSlide()
+          setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
         } else {
-          prevSlide()
+          setActiveSceneIndex((index) => (index - 1 + homeShowroomScenes.length) % homeShowroomScenes.length)
         }
       }
     }
@@ -683,7 +551,7 @@ function Home({ products }: { products: Product[] }) {
       heroEl.removeEventListener('touchstart', onTouchStart)
       heroEl.removeEventListener('touchend', onTouchEnd)
     }
-  }, [nextSlide, prevSlide])
+  }, [])
 
   return (
     <main id="main-content">
@@ -692,8 +560,21 @@ function Home({ products }: { products: Product[] }) {
         aria-label="Maison Debrah showroom"
         aria-roledescription="carousel"
         ref={heroRef}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false)
+          if (!prefersReducedMotion && !heroRef.current?.contains(document.activeElement)) setPlayThroughInteraction(false)
+        }}
+        onFocusCapture={(event) => {
+          setHasFocus(true)
+          if (!(event.target as HTMLElement).closest('.hero-play-toggle')) setPlayThroughInteraction(false)
+        }}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setHasFocus(false)
+            if (!prefersReducedMotion && !event.currentTarget.matches(':hover')) setPlayThroughInteraction(false)
+          }
+        }}
       >
         <div className="showroom-hero-track">
           {homeShowroomScenes.map((scene, index) => (
@@ -708,116 +589,13 @@ function Home({ products }: { products: Product[] }) {
           ))}
         </div>
 
-        {/* Interactive Architectural Hotspots Layer */}
-        {showHotspots && currentHotspots.length > 0 && (
-          <div className="hero-hotspots-layer" aria-label="Key architectural pieces in this scene">
-            {currentHotspots.map((spot) => {
-              const isExpanded = activeHotspotId === spot.id
-              const isTopHalf = spot.y < 45
-              const isRightAligned = spot.x > 60
-              const isLeftAligned = spot.x < 35
-              const hAlign = isRightAligned ? 'align-right' : isLeftAligned ? 'align-left' : 'align-center'
-              const vAlign = isTopHalf ? 'place-bottom' : 'place-top'
-
-              return (
-                <div
-                  key={spot.id}
-                  className={`hero-hotspot-pin-wrap ${isExpanded ? 'active' : ''} ${vAlign} ${hAlign}`}
-                  style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-                >
-                  <button
-                    type="button"
-                    className="hero-hotspot-pin"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setActiveHotspotId(isExpanded ? null : spot.id)
-                    }}
-                    aria-label={`${spot.label} (${spot.category})`}
-                    aria-expanded={isExpanded}
-                  >
-                    <span className="hotspot-pulse" aria-hidden="true" />
-                    <span className="hotspot-core" aria-hidden="true">
-                      <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-                        <line x1="8" y1="3" x2="8" y2="13" />
-                        <line x1="3" y1="8" x2="13" y2="8" />
-                      </svg>
-                    </span>
-                  </button>
-
-                  {isExpanded && (
-                    <div
-                      className="hero-hotspot-card"
-                      role="dialog"
-                      aria-label={spot.label}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="hotspot-card-top">
-                        <span className="hotspot-card-category">{spot.category}</span>
-                        <button
-                          type="button"
-                          className="hotspot-card-close"
-                          onClick={() => setActiveHotspotId(null)}
-                          aria-label="Close detail"
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <strong className="hotspot-card-title">{spot.label}</strong>
-                      <p className="hotspot-card-desc">{spot.description}</p>
-                      <Link className="hotspot-card-link" to={spot.link} onClick={() => setActiveHotspotId(null)}>
-                        Explore piece <span aria-hidden="true">→</span>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        <button
-          type="button"
-          className="hero-arrow hero-arrow--prev"
-          onClick={prevSlide}
-          aria-label="Previous showroom scene"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-        </button>
-
-        <button
-          type="button"
-          className="hero-arrow hero-arrow--next"
-          onClick={nextSlide}
-          aria-label="Next showroom scene"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
-        </button>
-
         <div className="showroom-hero-copy">
-          <div className="concept-eyebrow">
-            <span className="eyebrow-flag">Addis Ababa Flagship · {activeScene.label}</span>
-            <span className="eyebrow-pill">{sceneHighlights[activeScene.name]}</span>
-            <button
-              type="button"
-              className={`eyebrow-toggle-hotspots ${showHotspots ? 'active' : ''}`}
-              onClick={() => {
-                setShowHotspots(!showHotspots)
-                setActiveHotspotId(null)
-              }}
-              aria-label={showHotspots ? 'Hide architectural details' : 'Show architectural details'}
-            >
-              <span className="eyebrow-toggle-icon" aria-hidden="true">✦</span>
-              <span>{showHotspots ? 'Details' : 'Show Details'}</span>
-            </button>
-          </div>
+          <span className="concept-eyebrow">Our showroom · {activeScene.label}</span>
           <h1>{HOME_CONTENT.heroTitle}</h1>
           <p>{HOME_CONTENT.heroDescription}</p>
           <div className="showroom-hero-actions">
             <Link className="reference-button hero-primary-btn" to="/projects">
-              View showroom projects <span aria-hidden="true">→</span>
-            </Link>
-            <Link className="hero-secondary-btn" to="/collection/meubilair">
-              Browse collection
+              {HOME_CONTENT.heroButton} <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
@@ -829,7 +607,7 @@ function Home({ products }: { products: Product[] }) {
                 type="button"
                 key={scene.name}
                 className={`hero-scene-tab ${index === activeSceneIndex ? 'active' : ''}`}
-                onClick={() => goToSlide(index)}
+                onClick={() => setActiveSceneIndex(index)}
                 aria-label={`View ${scene.label}`}
                 aria-pressed={index === activeSceneIndex}
               >
@@ -838,33 +616,27 @@ function Home({ products }: { products: Product[] }) {
                   <span className="hero-tab-name">{scene.label}</span>
                 </div>
                 <div className="hero-tab-bar">
-                  <div
-                    key={`${index}-${slideCycleKey}`}
-                    className="hero-tab-fill"
-                  />
+                  <div className="hero-tab-fill" />
                 </div>
               </button>
             ))}
           </div>
-
           <button
             type="button"
-            className="hero-scroll-prompt"
+            className="hero-play-toggle"
             onClick={() => {
-              const target = document.getElementById('collection-paths')
-              if (target) {
-                target.scrollIntoView({ behavior: 'smooth' })
-              }
+              setIsManuallyPaused(!showPlayControl)
+              setPlayThroughInteraction(showPlayControl)
             }}
-            aria-label="Scroll down to browse collection"
+            aria-label={showPlayControl ? 'Play showroom slideshow' : 'Pause showroom slideshow'}
           >
-            <span className="hero-scroll-line" />
-            <span>Scroll to view</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <span aria-hidden="true">{showPlayControl ? '▶' : 'Ⅱ'}</span>
+            {showPlayControl ? 'Play' : 'Pause'}
           </button>
         </div>
+        <span className="visually-hidden" aria-live={autoPaused ? 'polite' : 'off'}>
+          Showroom scene {activeSceneIndex + 1} of {homeShowroomScenes.length}: {activeScene.label}
+        </span>
       </section>
       <section id="collection-paths" className="collection-paths" aria-labelledby="collection-paths-title">
         <div className="collection-paths-heading">
