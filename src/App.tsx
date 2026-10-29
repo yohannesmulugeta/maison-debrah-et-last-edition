@@ -479,43 +479,51 @@ function Home({ products }: { products: Product[] }) {
     .filter((item): item is Product => Boolean(item))
   const [newsletterStatus, setNewsletterStatus] = useState('')
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
+  const [isSlideshowPaused, setIsSlideshowPaused] = useState(false)
+  const [playThroughInteraction, setPlayThroughInteraction] = useState(false)
+  const heroRef = useRef<HTMLElement>(null)
   const activeScene = homeShowroomScenes[activeSceneIndex]
+
+  useEffect(() => {
+    if (isSlideshowPaused) return
+    const timer = window.setInterval(() => {
+      if (document.hidden || (!playThroughInteraction && (window.matchMedia('(prefers-reduced-motion: reduce)').matches || heroRef.current?.matches(':hover, :focus-within')))) return
+      setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
+    }, 6000)
+    return () => window.clearInterval(timer)
+  }, [isSlideshowPaused, playThroughInteraction])
 
   return (
     <main id="main-content">
-      <section className="showroom-hero" aria-label="Maison Debrah showroom">
-        <div className="showroom-hero-main">
-          <picture className="showroom-hero-media">
-            <source media="(max-width: 800px)" srcSet={asset(`/images/projects/${activeScene.name}-1600.webp`)} />
-            <img
-              src={asset(`/images/projects/${activeScene.name}-2400.webp`)}
-              alt={activeScene.alt}
-              fetchPriority={activeSceneIndex === 0 ? 'high' : undefined}
-            />
-          </picture>
-          <div className="showroom-hero-copy">
-            <span className="concept-eyebrow" aria-live="polite">Our showroom · {activeScene.label}</span>
-            <h1>{HOME_CONTENT.heroTitle}</h1>
-            <p>{HOME_CONTENT.heroDescription}</p>
-            <div className="showroom-hero-actions">
-              <Link className="reference-button" to="/projects">{HOME_CONTENT.heroButton} <span aria-hidden="true">→</span></Link>
-              <Link className="concept-secondary-link" to="/collection/meubilair">Browse furniture</Link>
-            </div>
+      <section className="showroom-hero" aria-label="Maison Debrah showroom" aria-roledescription="carousel" ref={heroRef}>
+        <div className="showroom-hero-track" style={{ transform: `translateX(-${activeSceneIndex * 100}%)` }}>
+          {homeShowroomScenes.map((scene, index) => (
+            <picture className="showroom-hero-slide" key={scene.name} aria-hidden={index !== activeSceneIndex}>
+              <source media="(max-width: 800px)" srcSet={asset(`/images/projects/${scene.name}-1600.webp`)} />
+              <img src={asset(`/images/projects/${scene.name}-2400.webp`)} alt={scene.alt} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : undefined} />
+            </picture>
+          ))}
+        </div>
+        <div className="showroom-hero-copy">
+          <span className="concept-eyebrow">Our showroom · {activeScene.label}</span>
+          <h1>{HOME_CONTENT.heroTitle}</h1>
+          <p>{HOME_CONTENT.heroDescription}</p>
+          <div className="showroom-hero-actions">
+            <Link className="reference-button" to="/projects">{HOME_CONTENT.heroButton} <span aria-hidden="true">→</span></Link>
+            <Link className="concept-secondary-link" to="/collection/meubilair">Browse furniture</Link>
           </div>
         </div>
-        <div className="showroom-hero-side" aria-label="More showroom views">
-          {homeShowroomScenes.map((scene, index) => index !== activeSceneIndex && (
-            <button
-              className="showroom-hero-preview"
-              type="button"
-              key={scene.name}
-              onClick={() => setActiveSceneIndex(index)}
-              aria-label={`View the ${scene.label.toLowerCase()} as the main showroom photo`}
-            >
-              <img src={asset(`/images/projects/${scene.name}-640.webp`)} alt="" decoding="async" />
-              <span><small>Explore space</small><strong>{scene.label}</strong><span aria-hidden="true">↗</span></span>
-            </button>
-          ))}
+        <div className="showroom-hero-controls" aria-label="Showroom slideshow controls">
+          <button type="button" onClick={() => setActiveSceneIndex((index) => (index - 1 + homeShowroomScenes.length) % homeShowroomScenes.length)} aria-label="Previous showroom photo">‹</button>
+          <div className="showroom-hero-dots">
+            {homeShowroomScenes.map((scene, index) => (
+              <button type="button" key={scene.name} onClick={() => setActiveSceneIndex(index)} aria-label={`Show ${scene.label.toLowerCase()} photo`} aria-pressed={index === activeSceneIndex} />
+            ))}
+          </div>
+          <button type="button" onClick={() => setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)} aria-label="Next showroom photo">›</button>
+          <button type="button" onClick={() => { setPlayThroughInteraction(isSlideshowPaused); setIsSlideshowPaused(!isSlideshowPaused) }} aria-label={isSlideshowPaused ? 'Play slideshow' : 'Pause slideshow'}>
+            <span aria-hidden="true">{isSlideshowPaused ? '▶' : 'Ⅱ'}</span>
+          </button>
         </div>
       </section>
       <section className="collection-paths" aria-labelledby="collection-paths-title">
