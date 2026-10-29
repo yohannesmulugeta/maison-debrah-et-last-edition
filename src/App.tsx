@@ -485,6 +485,79 @@ const chairImages: Record<string, string> = {
   elowen: 'ADC200451-400x400.jpg',
 }
 
+interface ShowroomHotspot {
+  id: string
+  x: number
+  y: number
+  label: string
+  category: string
+  description: string
+  link: string
+}
+
+const SHOWROOM_HOTSPOTS: Record<string, ShowroomHotspot[]> = {
+  'page-03-entry': [
+    {
+      id: 'h-bronze-portal',
+      x: 46,
+      y: 52,
+      label: 'Grand Fluted Bronze Portal',
+      category: 'Architectural Millwork',
+      description: 'Bespoke hand-patinated bronze framing with floor-to-ceiling pivot architecture.',
+      link: '/projects',
+    },
+    {
+      id: 'h-calacatta-console',
+      x: 74,
+      y: 72,
+      label: 'Calacatta Viola Pedestal',
+      category: 'Sculptural Marble',
+      description: 'Hand-finished Italian marble plinth crafted for museum-grade private residences.',
+      link: '/collection/salontafels',
+    },
+  ],
+  'page-24-room-4': [
+    {
+      id: 'h-boucle-sofa',
+      x: 36,
+      y: 66,
+      label: 'Bouclé Low-Lounge Sectional',
+      category: 'Seating & Sofas',
+      description: 'Modular architecture tailored in heavyweight ivory bouclé with feather-blend cushioning.',
+      link: '/collection/banken-hoekbanken',
+    },
+    {
+      id: 'h-orbital-lighting',
+      x: 62,
+      y: 26,
+      label: 'Orbital Brass Chandelier',
+      category: 'Architectural Lighting',
+      description: 'Hand-burnished solid brass rings casting ambient architectural illumination.',
+      link: '/collection/verlichting',
+    },
+  ],
+  'page-04-dining-area': [
+    {
+      id: 'h-quartzite-table',
+      x: 48,
+      y: 68,
+      label: 'Sculptural Quartzite Monolith',
+      category: 'Dining Tables',
+      description: 'Custom 10-guest dining monolith carved from rare Brazilian quartzite with chamfered edge.',
+      link: '/collection/eetkamertafels',
+    },
+    {
+      id: 'h-murano-chandelier',
+      x: 52,
+      y: 20,
+      label: 'Murano Glass Tiered Cascade',
+      category: 'Statement Lighting',
+      description: 'Mouth-blown fluted amber and smoky glass prisms suspended on patinated bronze structure.',
+      link: '/collection/verlichting',
+    },
+  ],
+}
+
 function Home({ products }: { products: Product[] }) {
   const featured = ['caslen', 'ravlen', 'savel', 'marenza', 'orvella', 'vin-gris', 'chasson', 'arvis-2']
     .map((slug) => products.find((item) => item.slug === slug))
@@ -495,9 +568,11 @@ function Home({ products }: { products: Product[] }) {
   const [newsletterStatus, setNewsletterStatus] = useState('')
   const [activeSceneIndex, setActiveSceneIndex] = useState(0)
   const [slideCycleKey, setSlideCycleKey] = useState(0)
+  const [showHotspots, setShowHotspots] = useState(true)
+  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null)
   const heroRef = useRef<HTMLElement>(null)
-  const lastWheelTimeRef = useRef(0)
   const activeScene = homeShowroomScenes[activeSceneIndex]
+  const currentHotspots = SHOWROOM_HOTSPOTS[activeScene.name] || []
 
   const sceneHighlights: Record<string, string> = {
     'page-03-entry': 'Grand Portals · Calacatta Marble',
@@ -508,16 +583,19 @@ function Home({ products }: { products: Product[] }) {
   const goToSlide = (index: number) => {
     setActiveSceneIndex(index)
     setSlideCycleKey((k) => k + 1)
+    setActiveHotspotId(null)
   }
 
   const nextSlide = useCallback(() => {
     setActiveSceneIndex((idx) => (idx + 1) % homeShowroomScenes.length)
     setSlideCycleKey((k) => k + 1)
+    setActiveHotspotId(null)
   }, [])
 
   const prevSlide = useCallback(() => {
     setActiveSceneIndex((idx) => (idx - 1 + homeShowroomScenes.length) % homeShowroomScenes.length)
     setSlideCycleKey((k) => k + 1)
+    setActiveHotspotId(null)
   }, [])
 
   useEffect(() => {
@@ -525,44 +603,10 @@ function Home({ products }: { products: Product[] }) {
       if (document.hidden) return
       setActiveSceneIndex((index) => (index + 1) % homeShowroomScenes.length)
       setSlideCycleKey((k) => k + 1)
+      setActiveHotspotId(null)
     }, 6000)
     return () => window.clearInterval(timer)
   }, [])
-
-  // Interactive mouse wheel scroll: transitions scenes down/up, then smoothly flows down to content
-  useEffect(() => {
-    const heroEl = heroRef.current
-    if (!heroEl) return
-
-    const onWheel = (e: WheelEvent) => {
-      if (window.scrollY > 15) return
-      const now = Date.now()
-      if (now - lastWheelTimeRef.current < 650) {
-        if ((e.deltaY > 0 && activeSceneIndex < homeShowroomScenes.length - 1) || (e.deltaY < 0 && activeSceneIndex > 0)) {
-          e.preventDefault()
-        }
-        return
-      }
-
-      if (e.deltaY > 30) {
-        if (activeSceneIndex < homeShowroomScenes.length - 1) {
-          e.preventDefault()
-          lastWheelTimeRef.current = now
-          goToSlide(activeSceneIndex + 1)
-        }
-        // When on the final slide (Dining area), natural wheel continues down to #collection-paths!
-      } else if (e.deltaY < -30) {
-        if (activeSceneIndex > 0) {
-          e.preventDefault()
-          lastWheelTimeRef.current = now
-          goToSlide(activeSceneIndex - 1)
-        }
-      }
-    }
-
-    heroEl.addEventListener('wheel', onWheel, { passive: false })
-    return () => heroEl.removeEventListener('wheel', onWheel)
-  }, [activeSceneIndex])
 
   // Keyboard navigation on hero: ArrowLeft / ArrowRight to switch showroom scenes
   useEffect(() => {
@@ -632,6 +676,60 @@ function Home({ products }: { products: Product[] }) {
           ))}
         </div>
 
+        {/* Interactive Architectural Hotspots Layer */}
+        {showHotspots && currentHotspots.length > 0 && (
+          <div className="hero-hotspots-layer" aria-label="Key architectural pieces in this scene">
+            {currentHotspots.map((spot) => {
+              const isExpanded = activeHotspotId === spot.id
+              const isRightAligned = spot.x > 60
+              return (
+                <div
+                  key={spot.id}
+                  className={`hero-hotspot-pin-wrap ${isExpanded ? 'active' : ''} ${isRightAligned ? 'align-right' : ''}`}
+                  style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
+                >
+                  <button
+                    type="button"
+                    className="hero-hotspot-pin"
+                    onClick={() => setActiveHotspotId(isExpanded ? null : spot.id)}
+                    aria-label={`${spot.label} (${spot.category})`}
+                    aria-expanded={isExpanded}
+                  >
+                    <span className="hotspot-pulse" aria-hidden="true" />
+                    <span className="hotspot-core" aria-hidden="true">
+                      <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                        <line x1="8" y1="3" x2="8" y2="13" />
+                        <line x1="3" y1="8" x2="13" y2="8" />
+                      </svg>
+                    </span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="hero-hotspot-card" role="dialog" aria-label={spot.label}>
+                      <div className="hotspot-card-top">
+                        <span className="hotspot-card-category">{spot.category}</span>
+                        <button
+                          type="button"
+                          className="hotspot-card-close"
+                          onClick={() => setActiveHotspotId(null)}
+                          aria-label="Close detail"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <strong className="hotspot-card-title">{spot.label}</strong>
+                      <p className="hotspot-card-desc">{spot.description}</p>
+                      <Link className="hotspot-card-link" to={spot.link} onClick={() => setActiveHotspotId(null)}>
+                        Explore piece <span aria-hidden="true">→</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         <button
           type="button"
           className="hero-arrow hero-arrow--prev"
@@ -654,6 +752,18 @@ function Home({ products }: { products: Product[] }) {
           <div className="concept-eyebrow">
             <span className="eyebrow-flag">Flagship Showroom · {activeScene.label}</span>
             <span className="eyebrow-pill">{sceneHighlights[activeScene.name]}</span>
+            <button
+              type="button"
+              className={`eyebrow-toggle-hotspots ${showHotspots ? 'active' : ''}`}
+              onClick={() => {
+                setShowHotspots(!showHotspots)
+                setActiveHotspotId(null)
+              }}
+              aria-label={showHotspots ? 'Hide architectural hotspots' : 'Show architectural hotspots'}
+            >
+              <span className="eyebrow-toggle-icon" aria-hidden="true">✦</span>
+              <span>{showHotspots ? 'Key Pieces' : 'Explore Pieces'}</span>
+            </button>
           </div>
           <h1>{HOME_CONTENT.heroTitle}</h1>
           <p>{HOME_CONTENT.heroDescription}</p>

@@ -1319,12 +1319,223 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
   color: #ad8e5c;
 }
 
+/* Interactive Architectural Hotspots */
+.eyebrow-toggle-hotspots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #e8ded1;
+  font: 500 11px Inter, Arial, sans-serif;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.eyebrow-toggle-hotspots:hover {
+  background: rgba(173, 142, 92, 0.25);
+  border-color: #ad8e5c;
+  color: #ffffff;
+}
+
+.eyebrow-toggle-hotspots.active {
+  background: rgba(173, 142, 92, 0.3);
+  border-color: #ad8e5c;
+  color: #f7eedf;
+}
+
+.eyebrow-toggle-icon {
+  color: #ad8e5c;
+  font-size: 11px;
+}
+
+.hero-hotspots-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.hero-hotspot-pin-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.hero-hotspot-pin {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(20, 31, 25, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f7eedf;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.hero-hotspot-pin:hover,
+.hero-hotspot-pin-wrap.active .hero-hotspot-pin {
+  transform: scale(1.15);
+  background: #ad8e5c;
+  border-color: #ffffff;
+  color: #ffffff;
+  box-shadow: 0 0 24px rgba(173, 142, 92, 0.8), 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.hotspot-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid #ad8e5c;
+  opacity: 0.8;
+  animation: hotspotRipple 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.hero-hotspot-pin-wrap.active .hotspot-pulse {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes hotspotRipple {
+  0% { transform: scale(0.85); opacity: 0.9; }
+  100% { transform: scale(1.85); opacity: 0; }
+}
+
+.hotspot-core {
+  display: grid;
+  place-items: center;
+  transition: transform 0.3s ease;
+}
+
+.hero-hotspot-pin-wrap.active .hotspot-core {
+  transform: rotate(45deg);
+}
+
+/* Floating Glassmorphism Hotspot Card */
+.hero-hotspot-card {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  padding: 16px 18px;
+  background: rgba(14, 23, 18, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 24px rgba(173, 142, 92, 0.2);
+  color: #ffffff;
+  text-align: left;
+  animation: cardFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+.hero-hotspot-pin-wrap.align-right .hero-hotspot-card {
+  left: auto;
+  right: -10px;
+  transform: none;
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.hero-hotspot-pin-wrap.align-right .hero-hotspot-card {
+  animation-name: cardFadeInRight;
+}
+
+@keyframes cardFadeInRight {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hotspot-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.hotspot-card-category {
+  font: 600 10px Inter, Arial, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ad8e5c;
+}
+
+.hotspot-card-close {
+  background: none;
+  border: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.hotspot-card-close:hover {
+  color: #ffffff;
+}
+
+.hotspot-card-title {
+  display: block;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.hotspot-card-desc {
+  font: 400 12px/1.55 Inter, Arial, sans-serif;
+  color: #e2dad0;
+  margin: 0 0 12px;
+}
+
+.hotspot-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 11px Inter, Arial, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ad8e5c;
+  transition: all 0.2s ease;
+}
+
+.hotspot-card-link:hover {
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
 @media (max-width: 768px) {
   .hero-arrow {
     display: none;
   }
   .hero-scroll-prompt {
     display: none;
+  }
+  .hero-hotspot-card {
+    width: 230px;
+    padding: 12px 14px;
   }
 }
 
