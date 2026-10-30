@@ -932,6 +932,7 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
 }
 
 /* Showroom hero */
+.showroom-story { position: relative; }
 .showroom-hero {
   position: relative;
   display: flex;
@@ -944,6 +945,58 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
   background: #141f19;
   color: #fff;
   touch-action: pan-y;
+}
+
+.showroom-hero-intro { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-header--logo-floating .brand {
+    position: relative;
+    z-index: 2;
+    transform: translate3d(var(--brand-shift-x, 0px), var(--brand-shift, 0px), 0) scale(var(--brand-scale, 1));
+    transform-origin: center;
+    will-change: transform;
+  }
+}
+
+@media (min-width: 801px) and (prefers-reduced-motion: no-preference) {
+  .site-header--logo-floating .desktop-nav { opacity: var(--nav-opacity, 1); pointer-events: var(--nav-pointer, auto); }
+}
+
+@media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
+  .site-header--logo-floating .header-search { opacity: var(--mobile-search-opacity, 0); }
+}
+
+@media (min-width: 801px) {
+  .showroom-story { height: 310svh; }
+  .showroom-story .showroom-hero { position: sticky; top: 0; height: 100svh; min-height: 0; }
+  .showroom-story .showroom-hero-intro {
+    display: block;
+    position: absolute;
+    z-index: 2;
+    left: clamp(24px, 5vw, 80px);
+    bottom: clamp(142px, 17vh, 184px);
+    max-width: 520px;
+    margin: 0;
+    color: #fff;
+    font: 400 clamp(26px, 2.4vw, 38px)/1.15 'Playfair Display', Georgia, serif;
+    text-shadow: 0 3px 20px rgba(0,0,0,.6);
+    opacity: var(--opening-opacity, 1);
+    pointer-events: none;
+  }
+  .showroom-story .showroom-hero-copy { margin-top: auto; margin-bottom: 0; padding-top: 0; opacity: var(--story-copy-opacity, 0); }
+  .showroom-story .showroom-hero-copy[aria-hidden="true"] { pointer-events: none; }
+  .showroom-hero-copy-content { animation: showroom-copy-in .45s ease-out both; }
+  .showroom-story .showroom-hero-nav { margin-top: 20px; margin-bottom: 46px; padding-top: 16px; }
+  .showroom-story .showroom-hero-tabs { gap: 16px; }
+  .showroom-story .hero-scene-tab { min-width: 92px; }
+}
+
+@keyframes showroom-copy-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+@media (min-width: 801px) and (max-height: 760px) {
+  .showroom-story .showroom-hero-copy h1, .showroom-story .showroom-hero-copy h2 { font-size: clamp(36px, 4.3vw, 58px); margin-bottom: 12px; }
+  .showroom-story .showroom-hero-copy p { margin-bottom: 18px; font-size: 14px; line-height: 1.5; }
 }
 
 .showroom-hero-track {
@@ -1023,7 +1076,7 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
   background: #ad8e5c;
 }
 
-.showroom-hero h1 {
+.showroom-hero h1, .showroom-hero h2 {
   margin-bottom: 22px;
   font-family: 'Playfair Display', Georgia, serif;
   font-size: clamp(42px, 5.2vw, 70px);
@@ -1359,4 +1412,26 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
   .collection-paths { padding: 60px 16px; }
   .collection-paths-grid { grid-template-columns: 1fr; gap: 8px; }
   .collection-paths-grid a { min-height: 280px; }
+}
+
+@media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
+  .showroom-story { height: 310svh; }
+  .showroom-story .showroom-hero { position: sticky; top: 0; height: 100svh; min-height: 0; }
+  .showroom-story .showroom-hero-intro {
+    display: block;
+    position: absolute;
+    z-index: 2;
+    left: 20px;
+    right: 20px;
+    bottom: 130px;
+    margin: 0;
+    font: 400 clamp(27px, 7vw, 35px)/1.15 'Playfair Display', Georgia, serif;
+    text-shadow: 0 3px 20px rgba(0,0,0,.6);
+    opacity: var(--opening-opacity, 1);
+    pointer-events: none;
+  }
+  .showroom-story .showroom-hero-copy { margin-top: auto; margin-bottom: 0; padding-top: 0; opacity: var(--story-copy-opacity, 0); }
+  .showroom-story .showroom-hero-copy[aria-hidden="true"] { pointer-events: none; }
+  .showroom-story .showroom-hero-copy h2 { font-size: clamp(32px, 8vw, 42px); }
+  .showroom-story .showroom-hero-nav { margin-top: 16px; margin-bottom: 42px; padding-top: 14px; }
 }

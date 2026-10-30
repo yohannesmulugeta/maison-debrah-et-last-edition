@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { categories, categoryName, productCategory, productsInCategory, topCategories, type Product } from './data/catalog'
 import { collectionShowroomScenes, homeShowroomScenes, projectGroups } from './data/projectImages'
@@ -11,6 +11,12 @@ const asset = (src: string) => src.startsWith('/') && !src.startsWith(import.met
 const reference = (name: string) => asset(`/images/reference-home/${name}`)
 const brochureUrl = 'https://online.flippingbook.com/view/1004331464/'
 const CART_STORAGE_KEY = `maison-debrah-cart:${import.meta.env.BASE_URL}`
+const SHOWROOM_LOGO_DOCK_DISTANCE = 220
+const showroomStoryCopy = [
+  { title: HOME_CONTENT.heroTitle, description: HOME_CONTENT.heroDescription },
+  { title: 'Explore the spaces', description: 'See seating, tables and lighting together in the Maison Debrah showroom.' },
+  { title: 'Notice the details', description: 'Take in the table, chairs and chandelier in a finished setting.' },
+] as const
 
 type Cart = Record<string, number>
 function loadCart(): Cart {
@@ -226,6 +232,7 @@ function Header({ count }: { count: number }) {
   const [open, setOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
   const menuToggle = useRef<HTMLButtonElement>(null)
   const mobileNav = useRef<HTMLElement>(null)
   const navigate = useNavigate()
@@ -234,14 +241,52 @@ function Header({ count }: { count: number }) {
   const isHome = location.pathname === '/'
   const isTransparent = isHome && !isScrolled && !openMenu && !open
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30)
+      const desktop = window.matchMedia('(min-width: 801px)').matches
+      const animated = !motion.matches
+      const story = isHome ? document.querySelector('.showroom-story') : null
+      const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 158
+      setIsScrolled(isHome && story ? story.getBoundingClientRect().bottom <= headerHeight : window.scrollY >= 30)
+
+      const progress = animated ? Math.min(1, Math.max(0, window.scrollY / SHOWROOM_LOGO_DOCK_DISTANCE)) : 1
+      const brand = headerRef.current?.querySelector<HTMLElement>('.brand')
+      const brandWidth = brand?.offsetWidth ?? 310
+      const compactHeight = window.innerHeight <= 760
+      const openingWidth = desktop
+        ? Math.min(compactHeight ? 500 : 680, window.innerWidth * (compactHeight ? 0.4 : 0.45))
+        : Math.min(320, window.innerWidth * 0.82)
+      const openingCenter = window.innerHeight / 2
+      const brandCenter = (brand?.offsetTop ?? 0) + (brand?.offsetHeight ?? 105) / 2
+      const brandCenterX = (brand?.offsetLeft ?? 0) + brandWidth / 2
+      headerRef.current?.style.setProperty('--brand-shift-x', `${(window.innerWidth / 2 - brandCenterX) * (1 - progress)}px`)
+      headerRef.current?.style.setProperty('--brand-shift', `${(openingCenter - brandCenter) * (1 - progress)}px`)
+      headerRef.current?.style.setProperty('--brand-scale', String(1 + (openingWidth / brandWidth - 1) * (1 - progress)))
+      const navOpacity = !isHome || !desktop || !animated || openMenu || open || window.scrollY <= 40 ? 1
+        : window.scrollY < 75 ? (75 - window.scrollY) / 35
+          : window.scrollY <= SHOWROOM_LOGO_DOCK_DISTANCE ? 0
+            : Math.min(1, (window.scrollY - SHOWROOM_LOGO_DOCK_DISTANCE) / 40)
+      headerRef.current?.style.setProperty('--nav-opacity', String(navOpacity))
+      headerRef.current?.style.setProperty('--nav-pointer', navOpacity >= 0.95 ? 'auto' : 'none')
+      const desktopNav = headerRef.current?.querySelector<HTMLElement>('.desktop-nav')
+      if (desktopNav) desktopNav.inert = navOpacity < 0.95
+      const searchOpacity = !isHome || desktop || !animated || open ? 1
+        : Math.min(1, Math.max(0, (window.scrollY - SHOWROOM_LOGO_DOCK_DISTANCE) / 40))
+      headerRef.current?.style.setProperty('--mobile-search-opacity', String(searchOpacity))
+      const search = headerRef.current?.querySelector<HTMLElement>('.header-search')
+      if (search) search.inert = searchOpacity < 0.95
     }
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [location.pathname])
+    window.addEventListener('resize', handleScroll)
+    motion.addEventListener('change', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+      motion.removeEventListener('change', handleScroll)
+    }
+  }, [isHome, location.pathname, openMenu, open])
 
   useEffect(() => {
     if (open) mobileNav.current?.querySelector<HTMLButtonElement>('.mobile-top button')?.focus()
@@ -286,7 +331,7 @@ function Header({ count }: { count: number }) {
   return (
     <>
       <a className="skip-link" href="#main-content" onClick={skipToContent}>Skip to content</a>
-      <header className={`site-header ${isHome ? 'site-header--home' : ''} ${isTransparent ? 'site-header--transparent' : 'site-header--solid'}`}>
+      <header ref={headerRef} className={`site-header ${isHome ? 'site-header--home' : ''} ${isTransparent ? 'site-header--transparent' : 'site-header--solid'} ${isHome && !openMenu && !open ? 'site-header--logo-floating' : ''}`}>
         <div className="header-top">
           <form className="header-search" role="search" onSubmit={search}>
             <Icon name="search" />
@@ -498,11 +543,67 @@ function Home({ products }: { products: Product[] }) {
   const [hasFocus, setHasFocus] = useState(false)
   const [isManuallyPaused, setIsManuallyPaused] = useState(false)
   const [playThroughInteraction, setPlayThroughInteraction] = useState(false)
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 801px)').matches)
+  const isScrollStory = isDesktop || !prefersReducedMotion
+  const [showSceneCopy, setShowSceneCopy] = useState(false)
+  const storyRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLElement>(null)
   const activeScene = homeShowroomScenes[activeSceneIndex]
-  const autoPaused = isManuallyPaused || (!playThroughInteraction && (isHovered || hasFocus || prefersReducedMotion))
+  const activeStoryCopy = showroomStoryCopy[activeSceneIndex] ?? showroomStoryCopy[0]
+  const storyHeading = isScrollStory ? activeStoryCopy.title : HOME_CONTENT.heroTitle
+  const autoPaused = isScrollStory || isManuallyPaused || (!playThroughInteraction && (isHovered || hasFocus || prefersReducedMotion))
   const showPlayControl = isManuallyPaused || (prefersReducedMotion && !playThroughInteraction)
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 801px)')
+    const update = () => setIsDesktop(media.matches)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
+    if (!isScrollStory) return
+    let frame = 0
+    const update = () => {
+      frame = 0
+      const story = storyRef.current
+      const hero = heroRef.current
+      if (!story || !hero) return
+      const storyTop = story.getBoundingClientRect().top + window.scrollY
+      const travel = Math.max(1, story.offsetHeight - window.innerHeight)
+      const localScroll = Math.min(travel, Math.max(0, window.scrollY - storyTop))
+      const stageLength = Math.max(1, (travel - SHOWROOM_LOGO_DOCK_DISTANCE) / homeShowroomScenes.length)
+      setActiveSceneIndex(Math.min(homeShowroomScenes.length - 1, Math.floor(Math.max(0, localScroll - SHOWROOM_LOGO_DOCK_DISTANCE) / stageLength)))
+
+      const progress = prefersReducedMotion ? 1 : Math.min(1, localScroll / SHOWROOM_LOGO_DOCK_DISTANCE)
+      hero.style.setProperty('--opening-opacity', String(Math.max(0, 1 - progress * 2)))
+      hero.style.setProperty('--story-copy-opacity', String(prefersReducedMotion ? 1 : Math.min(1, Math.max(0, (localScroll - SHOWROOM_LOGO_DOCK_DISTANCE) / 80))))
+      setShowSceneCopy(prefersReducedMotion || localScroll >= SHOWROOM_LOGO_DOCK_DISTANCE + 70)
+    }
+    const schedule = () => { if (!frame) frame = window.requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      if (frame) window.cancelAnimationFrame(frame)
+    }
+  }, [isScrollStory, prefersReducedMotion])
+
+  const selectScene = (index: number) => {
+    if (!isScrollStory) {
+      setActiveSceneIndex(index)
+      return
+    }
+    const story = storyRef.current
+    if (!story) return
+    const storyTop = story.getBoundingClientRect().top + window.scrollY
+    const travel = Math.max(1, story.offsetHeight - window.innerHeight)
+    const stageLength = Math.max(1, (travel - SHOWROOM_LOGO_DOCK_DISTANCE) / homeShowroomScenes.length)
+    window.scrollTo({ top: storyTop + SHOWROOM_LOGO_DOCK_DISTANCE + index * stageLength + (index === 0 ? 80 : 2), behavior: prefersReducedMotion ? 'instant' : 'smooth' })
+  }
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -522,6 +623,7 @@ function Home({ products }: { products: Product[] }) {
 
   // Horizontal touch swipe to change showroom scenes on mobile
   useEffect(() => {
+    if (isScrollStory) return
     const heroEl = heroRef.current
     if (!heroEl) return
 
@@ -551,14 +653,15 @@ function Home({ products }: { products: Product[] }) {
       heroEl.removeEventListener('touchstart', onTouchStart)
       heroEl.removeEventListener('touchend', onTouchEnd)
     }
-  }, [])
+  }, [isScrollStory])
 
   return (
     <main id="main-content">
+      <div className="showroom-story" ref={storyRef}>
       <section
         className="showroom-hero"
         aria-label="Maison Debrah showroom"
-        aria-roledescription="carousel"
+        aria-roledescription={isScrollStory ? undefined : 'carousel'}
         ref={heroRef}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
@@ -584,36 +687,40 @@ function Home({ products }: { products: Product[] }) {
               aria-hidden={index !== activeSceneIndex}
             >
               <source media="(max-width: 800px)" srcSet={asset(`/images/projects/${scene.name}-1600.webp`)} />
-              <img src={asset(`/images/projects/${scene.name}-2400.webp`)} alt={scene.alt} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : undefined} />
+              <img src={asset(`/images/projects/${scene.name}-2400.webp`)} alt={scene.alt} loading={isScrollStory || index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : undefined} />
             </picture>
           ))}
         </div>
 
-        <div className="showroom-hero-copy">
-          <span className="concept-eyebrow">Our showroom · {activeScene.label}</span>
-          <h1>{HOME_CONTENT.heroTitle}</h1>
-          <p>{HOME_CONTENT.heroDescription}</p>
+        <h1 className="showroom-hero-intro" aria-hidden={!isScrollStory || prefersReducedMotion}>Welcome to Maison Debrah</h1>
+
+        <div className="showroom-hero-copy" aria-hidden={isScrollStory && !showSceneCopy}>
+          <div className="showroom-hero-copy-content" key={isScrollStory ? activeScene.name : 'mobile'}>
+            <span className="concept-eyebrow">{isScrollStory ? 'Inside Maison Debrah' : `Our showroom · ${activeScene.label}`}</span>
+            {isScrollStory && !prefersReducedMotion ? <h2>{storyHeading}</h2> : <h1>{storyHeading}</h1>}
+            <p>{isScrollStory ? activeStoryCopy.description : HOME_CONTENT.heroDescription}</p>
+          </div>
           <div className="showroom-hero-actions">
-            <Link className="reference-button hero-primary-btn" to="/projects">
+            <Link className="reference-button hero-primary-btn" to="/projects" tabIndex={isScrollStory && !showSceneCopy ? -1 : undefined}>
               {HOME_CONTENT.heroButton} <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
 
-        <div className="showroom-hero-nav" aria-label="Showroom scene selector">
+        <div className="showroom-hero-nav" aria-label={isScrollStory ? 'Showroom progress' : 'Showroom scene selector'}>
           <div className="showroom-hero-tabs">
             {homeShowroomScenes.map((scene, index) => (
               <button
                 type="button"
                 key={scene.name}
                 className={`hero-scene-tab ${index === activeSceneIndex ? 'active' : ''}`}
-                onClick={() => setActiveSceneIndex(index)}
-                aria-label={`View ${scene.label}`}
+                onClick={() => selectScene(index)}
+                aria-label={isScrollStory ? `View showroom photograph ${index + 1}` : `View ${scene.label}`}
                 aria-pressed={index === activeSceneIndex}
               >
                 <div className="hero-tab-meta">
                   <span className="hero-tab-num">0{index + 1}</span>
-                  <span className="hero-tab-name">{scene.label}</span>
+                  {!isScrollStory && <span className="hero-tab-name">{scene.label}</span>}
                 </div>
                 <div className="hero-tab-bar">
                   <div className="hero-tab-fill" />
@@ -621,7 +728,7 @@ function Home({ products }: { products: Product[] }) {
               </button>
             ))}
           </div>
-          <button
+          {!isScrollStory && <button
             type="button"
             className="hero-play-toggle"
             onClick={() => {
@@ -632,12 +739,13 @@ function Home({ products }: { products: Product[] }) {
           >
             <span aria-hidden="true">{showPlayControl ? '▶' : 'Ⅱ'}</span>
             {showPlayControl ? 'Play' : 'Pause'}
-          </button>
+          </button>}
         </div>
-        <span className="visually-hidden" aria-live={autoPaused ? 'polite' : 'off'}>
+        <span className="visually-hidden" aria-live={!isScrollStory && autoPaused ? 'polite' : 'off'}>
           Showroom scene {activeSceneIndex + 1} of {homeShowroomScenes.length}: {activeScene.label}
         </span>
       </section>
+      </div>
       <section id="collection-paths" className="collection-paths" aria-labelledby="collection-paths-title">
         <div className="collection-paths-heading">
           <span>Explore Maison Debrah</span>
@@ -1515,10 +1623,16 @@ function FloatingTools({ cart, products }: { cart: Cart; products: Product[] }) 
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowTop(window.scrollY > 300)
+      const mobileStory = window.innerWidth <= 800 ? document.querySelector('.showroom-story') : null
+      setShowTop(window.scrollY > 300 && (!mobileStory || mobileStory.getBoundingClientRect().bottom <= 0))
     }
+    handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('resize', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
   }, [])
 
   const count = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0)
