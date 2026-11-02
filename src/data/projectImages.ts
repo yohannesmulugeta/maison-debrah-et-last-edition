@@ -89,16 +89,25 @@ export const homeShowroomScenes = [
     name: 'page-03-entry',
     label: 'Entrance',
     alt: 'Maison Debrah showroom entrance with its sign above a circular metal screen',
-  },
-  {
-    name: 'page-24-room-4',
-    label: 'Living area',
-    alt: 'Maison Debrah showroom living area with pale sofas and a circular chandelier',
+    desktopSize: 2400,
   },
   {
     name: 'page-04-dining-area',
     label: 'Dining area',
     alt: 'Maison Debrah showroom dining area with a sculptural table and chandelier',
+    desktopSize: 2400,
+  },
+  {
+    name: 'page-12-reception',
+    label: 'Reception',
+    alt: 'Maison Debrah showroom reception with bronze desks and pendant lights',
+    desktopSize: 1600,
+  },
+  {
+    name: 'page-28-room-5',
+    label: 'Living area',
+    alt: 'Maison Debrah living area with a curved pale sofa and two chandeliers',
+    desktopSize: 1600,
   },
 ] as const
 

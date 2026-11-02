@@ -14,8 +14,9 @@ const CART_STORAGE_KEY = `maison-debrah-cart:${import.meta.env.BASE_URL}`
 const SHOWROOM_LOGO_DOCK_DISTANCE = 220
 const showroomStoryCopy = [
   { title: HOME_CONTENT.heroTitle, description: HOME_CONTENT.heroDescription },
-  { title: 'Explore the spaces', description: 'See seating, tables and lighting together in the Maison Debrah showroom.' },
   { title: 'Notice the details', description: 'Take in the table, chairs and chandelier in a finished setting.' },
+  { title: 'At the reception', description: 'See the reception desks and lighting inside the Maison Debrah showroom.' },
+  { title: 'Explore the spaces', description: 'See seating, tables and lighting together in the Maison Debrah showroom.' },
 ] as const
 
 type Cart = Record<string, number>
@@ -602,7 +603,7 @@ function Home({ products }: { products: Product[] }) {
     const storyTop = story.getBoundingClientRect().top + window.scrollY
     const travel = Math.max(1, story.offsetHeight - window.innerHeight)
     const stageLength = Math.max(1, (travel - SHOWROOM_LOGO_DOCK_DISTANCE) / homeShowroomScenes.length)
-    window.scrollTo({ top: storyTop + SHOWROOM_LOGO_DOCK_DISTANCE + index * stageLength + (index === 0 ? 80 : 2), behavior: prefersReducedMotion ? 'instant' : 'smooth' })
+    window.scrollTo({ top: storyTop + SHOWROOM_LOGO_DOCK_DISTANCE + index * stageLength + 80, behavior: prefersReducedMotion ? 'instant' : 'smooth' })
   }
 
   useEffect(() => {
@@ -687,7 +688,7 @@ function Home({ products }: { products: Product[] }) {
               aria-hidden={index !== activeSceneIndex}
             >
               <source media="(max-width: 800px)" srcSet={asset(`/images/projects/${scene.name}-1600.webp`)} />
-              <img src={asset(`/images/projects/${scene.name}-2400.webp`)} alt={scene.alt} loading={isScrollStory || index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : undefined} />
+              <img src={asset(`/images/projects/${scene.name}-${scene.desktopSize}.webp`)} alt={scene.alt} loading={isScrollStory || index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : undefined} />
             </picture>
           ))}
         </div>
@@ -1147,7 +1148,30 @@ function About() {
   )
 }
 
+const showroomGalleryImages = projectGroups.flatMap((group) =>
+  group.images.map((image) => ({ ...image, group: group.title }))
+)
+
 function Projects() {
+  const [selectedName, setSelectedName] = useState<string | null>(null)
+  const viewerRef = useRef<HTMLDialogElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const openerRef = useRef<HTMLButtonElement | null>(null)
+  const selectedIndex = showroomGalleryImages.findIndex((image) => image.name === selectedName)
+  const selectedImage = showroomGalleryImages[selectedIndex]
+
+  useEffect(() => {
+    if (selectedName !== null && viewerRef.current && !viewerRef.current.open) {
+      viewerRef.current.showModal()
+      closeRef.current?.focus()
+    }
+  }, [selectedName])
+
+  const changeImage = (direction: number) => {
+    if (selectedIndex < 0) return
+    setSelectedName(showroomGalleryImages[(selectedIndex + direction + showroomGalleryImages.length) % showroomGalleryImages.length].name)
+  }
+
   return (
     <StandardPage title="Inside the Maison Debrah showroom">
       <p className="concept-intro">Explore photographs of our completed showroom, from the entrance and reception to the furnished living, dining and bedroom spaces.</p>
@@ -1157,7 +1181,10 @@ function Projects() {
           <div className={`concept-gallery${group.images.length === 1 ? ' concept-gallery--single' : ''}`}>
             {group.images.map((image, index) => (
               <figure className="concept-card" key={image.name}>
-                <a href={asset(`/images/projects/${image.name}-1600.webp`)} target="_blank" rel="noreferrer">
+                <button type="button" aria-label={`View ${image.alt} in the showroom gallery`} onClick={(event) => {
+                  openerRef.current = event.currentTarget
+                  setSelectedName(image.name)
+                }}>
                   <img
                     src={asset(`/images/projects/${image.name}-640.webp`)}
                     alt={image.alt}
@@ -1166,8 +1193,8 @@ function Projects() {
                     loading="lazy"
                     decoding="async"
                   />
-                  <span>View full image <span aria-hidden="true">↗</span></span>
-                </a>
+                  <span>View image <span aria-hidden="true">↗</span></span>
+                </button>
                 <figcaption>{group.title} · View {index + 1}</figcaption>
               </figure>
             ))}
@@ -1175,6 +1202,38 @@ function Projects() {
         </section>
       ))}
       <Link className="reference-button concept-contact" to="/contact">Plan a showroom visit</Link>
+      <dialog
+        ref={viewerRef}
+        className="showroom-viewer"
+        aria-label="Showroom photograph viewer"
+        onClose={() => {
+          setSelectedName(null)
+          openerRef.current?.focus()
+        }}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) event.currentTarget.close()
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault()
+            changeImage(event.key === 'ArrowRight' ? 1 : -1)
+          }
+        }}
+      >
+        {selectedImage && (
+          <div className="showroom-viewer-content">
+            <button ref={closeRef} className="showroom-viewer-close" type="button" onClick={() => viewerRef.current?.close()} aria-label="Close showroom photograph">×</button>
+            <img src={asset(`/images/projects/${selectedImage.name}-1600.webp`)} alt={selectedImage.alt} />
+            <div className="showroom-viewer-footer">
+              <p aria-live="polite">{selectedImage.group} · {selectedIndex + 1} of {showroomGalleryImages.length}</p>
+              <div>
+                <button type="button" onClick={() => changeImage(-1)} aria-label="Previous showroom photograph">← Previous</button>
+                <button type="button" onClick={() => changeImage(1)} aria-label="Next showroom photograph">Next →</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </dialog>
     </StandardPage>
   )
 }

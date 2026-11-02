@@ -968,7 +968,7 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
 }
 
 @media (min-width: 801px) {
-  .showroom-story { height: 310svh; }
+  .showroom-story { height: 410svh; }
   .showroom-story .showroom-hero { position: sticky; top: 0; height: 100svh; min-height: 0; }
   .showroom-story .showroom-hero-intro {
     display: block;
@@ -1234,10 +1234,10 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
 .concept-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
 .concept-gallery--single { grid-template-columns: 1fr; }
 .concept-card { min-width: 0; margin: 0; }
-.concept-card a { position: relative; display: block; overflow: hidden; background: #e8e2d9; }
+.concept-card button { position: relative; display: block; width: 100%; padding: 0; border: 0; overflow: hidden; background: #e8e2d9; text-align: left; }
 .concept-card img { display: block; width: 100%; height: auto; aspect-ratio: 1.7; object-fit: cover; transition: transform .25s; }
-.concept-card a:hover img { transform: scale(1.025); }
-.concept-card a > span {
+.concept-card button:hover img { transform: scale(1.025); }
+.concept-card button > span {
   position: absolute;
   right: 12px;
   top: 12px;
@@ -1248,9 +1248,22 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
 }
 .concept-card figcaption { margin-top: 10px; color: #576158; font: 600 12px Inter, Arial, sans-serif; }
 .concept-contact { margin-top: 60px; }
+.showroom-viewer { width: min(96vw, 1600px); max-width: none; max-height: 96dvh; padding: 0; border: 0; background: #141d17; color: #fff; box-shadow: 0 24px 70px #0009; }
+.showroom-viewer::backdrop { background: rgba(8, 14, 10, .88); }
+.showroom-viewer-content { position: relative; }
+.showroom-viewer-content > img { width: 100%; max-height: calc(96dvh - 78px); object-fit: contain; }
+.showroom-viewer-close { position: absolute; top: 12px; right: 12px; z-index: 1; width: 44px; height: 44px; border: 0; border-radius: 50%; background: #fff; color: #17231c; font-size: 28px; line-height: 1; }
+.showroom-viewer-footer { min-height: 70px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.showroom-viewer-footer p { margin: 0; font-size: 14px; line-height: 1.4; }
+.showroom-viewer-footer > div { display: flex; gap: 8px; }
+.showroom-viewer-footer button { min-height: 44px; padding: 8px 14px; border: 1px solid #fff8; background: transparent; color: #fff; }
+.showroom-viewer-footer button:hover { background: #fff2; }
 
 @media (max-width: 700px) {
   .concept-gallery { grid-template-columns: 1fr; }
+  .showroom-viewer-footer { align-items: stretch; flex-direction: column; }
+  .showroom-viewer-footer > div { justify-content: space-between; }
+  .showroom-viewer-content > img { max-height: calc(96dvh - 118px); }
 }
 
 /* Desktop showroom and collection presentation */
@@ -1415,7 +1428,7 @@ textarea:focus-visible,summary:focus-visible{outline:3px solid #ad8e5c;outline-o
 }
 
 @media (max-width: 800px) and (prefers-reduced-motion: no-preference) {
-  .showroom-story { height: 310svh; }
+  .showroom-story { height: 410svh; }
   .showroom-story .showroom-hero { position: sticky; top: 0; height: 100svh; min-height: 0; }
   .showroom-story .showroom-hero-intro {
     display: block;
