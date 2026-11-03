@@ -6,6 +6,8 @@ A separate English-language React/Vite preview of [Maison Debrah's Dutch staging
 
 [View the Ethiopia draft](https://yohannesmulugeta.github.io/maison-debrah-et-last-edition/) after the Pages workflow finishes. The URL is a GitHub Pages preview, not a Maison Debrah-controlled domain.
 
+Cloudflare hosting for `maisondebrah-et.com` is configured separately from the GitHub Pages preview. See [DEPLOYMENT.md](DEPLOYMENT.md) for the correct repository, root-domain build settings, domain redirects and recovery steps. The custom-domain deployment retains the draft indexing settings and does not change the launch-approval or backend requirements below.
+
 ## Run locally
 
 ```powershell
