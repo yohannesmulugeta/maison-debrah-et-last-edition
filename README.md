@@ -43,11 +43,11 @@ The repository no longer contains Pages CMS configuration or links. The original
 - Product detail pages with the reference site's names, images, available summary text, category and related products. Product and collection names are unchanged. A browser-stored cart supports add, quantity, remove and persistence across refreshes.
 - Local images for 693 product gallery entries, reused by filename from the user's earlier public Maison Debrah recreation. The remaining 159 entries still use the staging host and may be unavailable when that site is down.
 - The 12 new listings use 24 optimized local photos and label unconfirmed details accordingly. Eight supplier photo groups with code or variant questions remain out of the catalogue; one overlapping folder was not added separately.
-- Clear loading, empty and error states. Forms, account access, checkout, payment and newsletter delivery are visible but not connected to a server; the preview does not submit orders or personal information.
+- Clear loading, empty and error states. Inquiry forms open editable email drafts addressed to the general or sales mailbox; WhatsApp links open editable message drafts. The website itself does not send messages, take orders or store form details on a server. Account access, checkout and payment remain preview-only.
 
 ## Remaining reference gaps
 
-The desktop homepage, shop and a representative product page were compared directly with the staging site on 28 October 2026. The 268 product records retain existing images, source shop order and reference prices, but the public site does not display those prices. They are not approved Ethiopia selling prices. Policy and service page copy has not been matched page by page. Account, checkout and forms remain preview-only. Mobile layout was not part of that desktop alignment pass.
+The desktop homepage, shop and a representative product page were compared directly with the staging site on 28 October 2026. The 268 reference product records retain existing images, source shop order and reference prices, but the public site does not display those prices. They are not approved Ethiopia selling prices. Policy and service page copy has not been matched page by page. Account and checkout remain preview-only. Mobile layout was not part of that desktop alignment pass.
 
 ## Before this could launch
 

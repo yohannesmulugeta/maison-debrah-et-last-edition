@@ -31,6 +31,7 @@ else products.forEach((product, index) => {
 })
 
 if (!site.contact || !/^\d+$/.test(site.contact.whatsappRaw) || !hasText(site.contact.email) || !site.contact.email.includes('@')) errors.push('site.json: contact needs a WhatsApp number and email')
+if (!hasText(site.contact?.salesEmail) || !site.contact.salesEmail.includes('@')) errors.push('site.json: sales email is required')
 if (!hasText(site.home?.heroTitle)) errors.push('site.json: homepage hero title is required')
 
 if (errors.length) {

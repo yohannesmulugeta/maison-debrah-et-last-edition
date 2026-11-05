@@ -51,7 +51,7 @@ export function PolicyContent({ type }: { type: PolicyType }) {
       <section>
         <h2>Information you choose to share</h2>
         <p>When you contact the showroom on WhatsApp, you may provide your name, contact details, product choices and project requirements. Those details are used to respond to your request and discuss a possible quotation or service. The website does not offer a newsletter signup.</p>
-        <p>Website forms currently show an on-screen confirmation but do not send or store the details on a server. For an inquiry now, use a WhatsApp link and confirm the message in WhatsApp.</p>
+        <p>Website forms open a draft in your email app, and WhatsApp links open an editable message. You choose whether to send either message. The website does not send or store form details on a server.</p>
       </section>
       <section>
         <h2>Information kept in your browser</h2>
@@ -59,11 +59,11 @@ export function PolicyContent({ type }: { type: PolicyType }) {
       </section>
       <section>
         <h2>Other services</h2>
-        <p>The website loads fonts from Google Fonts. Choosing a WhatsApp, social media or brochure link opens an external service that handles information under its own privacy terms. The website does not add its own analytics or advertising tracker.</p>
+        <p>The website loads fonts from Google Fonts. Choosing an email, WhatsApp, social media or brochure link opens another service that handles information under its own privacy terms. The website does not add its own analytics or advertising tracker.</p>
       </section>
       <section>
         <h2>Your choices and questions</h2>
-        <p>You can ask the showroom about information sent to it, including access, correction or deletion requests where applicable. The website does not store inquiry forms on a server. Ask the showroom about its handling and retention of WhatsApp messages.</p>
+        <p>You can ask the showroom about information sent to it, including access, correction or deletion requests where applicable. The website does not store inquiry forms on a server. Ask the showroom about its handling and retention of email and WhatsApp messages.</p>
       </section>
       <ContactLine />
     </div>

@@ -32,7 +32,7 @@ A Cloudflare zone Single Redirect rule matches `http.host eq "www.maisondebrah-e
 
 ## Draft status
 
-Connecting hosting and a domain does not approve the official franchise launch. Keep `noindex, nofollow` in both HTML entry points during review. The admin remains a browser-local demo, and forms, account and checkout still require the work described in `README.md` before official launch. Domain setup does not connect a database, mailbox, or payment service.
+Connecting hosting and a domain does not approve the official franchise launch. Keep `noindex, nofollow` in both HTML entry points during review. The admin remains a browser-local demo. Inquiry forms open email drafts; account and checkout still require the work described in `README.md` before official launch. Domain setup does not connect a database, mailbox, or payment service.
 
 ## Recovery and maintenance
 
