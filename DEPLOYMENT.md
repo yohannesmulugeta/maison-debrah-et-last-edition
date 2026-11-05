@@ -23,19 +23,20 @@ The existing Cloudflare Pages project `maisondebrah-et` uses the older `Maisonde
 ## Publishing and verification
 
 1. Run `npm ci`, `npm run lint`, and `npm run build`. The build validates product content and runs the TypeScript build.
-2. Confirm HTTPS, the `www` redirect, root-relative assets, catalogue data, hash-route navigation and the separate `/admin/` demo.
-3. Check the custom domain after deployment, including `robots.txt`, `sitemap.xml`, the homepage canonical URL, menu, catalogue, cart and WhatsApp links.
-4. Commits to the connected production branch trigger deployments; review the Cloudflare build result before treating an update as published.
+2. Verify the deployment at the project’s `pages.dev` address before attaching the custom domains.
+3. Add both domains through Pages Custom domains and verify their DNS records and certificate status.
+4. Confirm HTTPS, the `www` redirect, root-relative assets, catalogue data, hash-route navigation and the separate `/admin/` demo.
+5. Commits to the connected production branch trigger deployments; review the Cloudflare build result before treating an update as published.
 
 A Cloudflare zone Single Redirect rule matches `http.host eq "www.maisondebrah-et.com"` and returns a 301 redirect to `concat("https://maisondebrah-et.com", http.request.uri.path)` with query-string preservation. This hostname redirect is configured in Cloudflare rather than a Pages `_redirects` file. Existing hash routes remain unchanged.
 
-## Launch status
+## Draft status
 
-The owner approved search indexing for the custom-domain homepage. The GitHub Pages preview and browser-local admin demo remain unindexed. Hash routes are not suitable for reliable individual product indexing. Online forms are withheld until a delivery destination is provided and tested; WhatsApp is the current inquiry route. Business approval of contact details, product content, imagery rights and policy wording is still required before treating this as an official launch.
+Connecting hosting and a domain does not approve the official franchise launch. Keep `noindex, nofollow` in both HTML entry points during review. The admin remains a browser-local demo, and forms, account and checkout still require the work described in `README.md` before official launch. Domain setup does not connect a database, mailbox, or payment service.
 
 ## Recovery and maintenance
 
 - Use Cloudflare Pages deployment history to roll back to a previously verified production deployment when available. For the first deployment, fix or revert the source change and deploy again.
 - Keep the source commit associated with each deployment. Use a normal Git revert rather than rewriting shared branch history.
 - Maintain domain renewal, account recovery and agreed client access separately from source-code changes.
-- If the repository is renamed later, review Cloudflare's source connection, local Git remotes, preview base paths and documentation before the next deployment.
+- If the repository is renamed later, review Cloudflare’s source connection, local Git remotes, preview base paths and documentation before the next deployment.

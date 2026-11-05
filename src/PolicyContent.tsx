@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 export type PolicyType = 'shipping' | 'returns' | 'privacy' | 'terms'
 
 function ContactLine() {
-  return <p>Questions about an order or this page? <Link to="/contact">Contact the showroom on WhatsApp</Link>.</p>
+  return <p>Questions about an order or this page? <Link to="/contact">Contact the showroom</Link>.</p>
 }
 
 export function PolicyContent({ type }: { type: PolicyType }) {
@@ -51,7 +51,7 @@ export function PolicyContent({ type }: { type: PolicyType }) {
       <section>
         <h2>Information you choose to share</h2>
         <p>When you contact the showroom on WhatsApp, you may provide your name, contact details, product choices and project requirements. Those details are used to respond to your request and discuss a possible quotation or service. The website does not offer a newsletter signup.</p>
-        <p>The website does not accept online form submissions. To make an inquiry, use a WhatsApp link. A message is sent only after you confirm it in WhatsApp.</p>
+        <p>Website forms currently show an on-screen confirmation but do not send or store the details on a server. For an inquiry now, use a WhatsApp link and confirm the message in WhatsApp.</p>
       </section>
       <section>
         <h2>Information kept in your browser</h2>

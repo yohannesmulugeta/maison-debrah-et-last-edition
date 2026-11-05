@@ -343,7 +343,7 @@ function Header({ count }: { count: number }) {
         <div className="header-top">
           <form className="header-search" role="search" onSubmit={search}>
             <Icon name="search" />
-            <input name="q" type="search" placeholder="Search for a piece or collection" aria-label="Search collection" />
+            <input name="q" type="search" placeholder="Search collection" aria-label="Search collection" />
             <button type="submit" aria-label="Search collection"><Icon name="search" /></button>
           </form>
           <Link className="brand" to="/" aria-label="Maison Debrah Ethiopia home">
@@ -422,6 +422,7 @@ function Footer() {
           <a href={`https://wa.me/${ETHIOPIA_CONTACT.whatsappRaw}?text=Hello%20Maison%20Debrah%20Ethiopia`} target="_blank" rel="noreferrer">
             WhatsApp: {ETHIOPIA_CONTACT.phone}
           </a>
+          <a href={`mailto:${ETHIOPIA_CONTACT.email}`}>Email: {ETHIOPIA_CONTACT.email}</a>
           <Link to="/catalogue-request">Request catalogue</Link>
           <Link to="/design-consult">Design consultation</Link>
         </section>
@@ -505,7 +506,7 @@ function ProductCard({
         <a
           className="card-action-whatsapp"
           href={`https://wa.me/${ETHIOPIA_CONTACT.whatsappRaw}?text=${encodeURIComponent(
-            `Hello Maison Debrah Ethiopia, I would like to inquire about ${product.name}${product.sku ? ` (SKU: ${product.sku})` : ''}.`
+            `Hello Maison Debrah Ethiopia, I would like to inquire about ${product.name} (SKU: ${product.sku || 'N/A'}).`
           )}`}
           target="_blank"
           rel="noreferrer"
@@ -864,8 +865,7 @@ function Catalog({
   const [filtersOpen, setFiltersOpen] = useState(false)
   const query = (params.get('q') || '').trim().toLowerCase()
   const sort = params.get('sort') || 'featured'
-  const defaultPageSize = window.matchMedia('(max-width: 600px)').matches ? 12 : 50
-  const pageSize = [12, 24, 50].includes(Number(params.get('perPage'))) ? Number(params.get('perPage')) : defaultPageSize
+  const pageSize = [12, 24, 50].includes(Number(params.get('perPage'))) ? Number(params.get('perPage')) : 50
   const page = Math.max(1, Number(params.get('page') || '1') || 1)
 
   const filtered = useMemo(() => {
@@ -1039,7 +1039,7 @@ function ProductDetails({
     .slice(0, 3)
 
   const singleWhatsAppUrl = `https://wa.me/${ETHIOPIA_CONTACT.whatsappRaw}?text=${encodeURIComponent(
-    `Hello Maison Debrah Ethiopia,\n\nI would like to inquire about availability and ordering for:\n- Piece: ${product.name}\n- Quantity: ${quantity}${product.sku ? `\n- SKU: ${product.sku}` : ''}\n- Page: ${window.location.href}`
+    `Hello Maison Debrah Ethiopia,\n\nI would like to inquire about availability and ordering for:\n- Piece: ${product.name}\n- Quantity: ${quantity}\n- SKU: ${product.sku || 'N/A'}\n- Page: ${window.location.href}`
   )}`
 
   return (
@@ -1242,9 +1242,10 @@ function Contact() {
       <h2>Visit or contact our team</h2>
       <p>
         <strong>Showroom:</strong> {ETHIOPIA_CONTACT.showroom}<br />
-        <strong>WhatsApp & Tel:</strong> {ETHIOPIA_CONTACT.phone}
+        <strong>WhatsApp & Tel:</strong> {ETHIOPIA_CONTACT.phone}<br />
+        <strong>Email:</strong> {ETHIOPIA_CONTACT.email}
       </p>
-      <DirectInquiryLink kind="contact" />
+      <PreviewForm kind="contact" />
     </StandardPage>
   )
 }
@@ -1266,24 +1267,30 @@ function StandardPage({ title, children, image }: { title: string; children: Rea
   )
 }
 
-function DirectInquiryLink({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
-  const messages = {
-    contact: 'Hello Maison Debrah Ethiopia, I would like to contact your Addis Ababa showroom.',
-    catalogue: 'Hello Maison Debrah Ethiopia, I would like to request your catalogue.',
-    consult: 'Hello Maison Debrah Ethiopia, I would like to ask about a design consultation.',
-  }
+function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
+  const [status, setStatus] = useState('')
   return (
-    <div className="direct-inquiry">
-      <p>Contact the Addis Ababa team on WhatsApp. Your message is sent only when you tap Send in WhatsApp.</p>
-      <a
-        className="reference-button whatsapp-button"
-        href={`https://wa.me/${ETHIOPIA_CONTACT.whatsappRaw}?text=${encodeURIComponent(messages[kind])}`}
-        target="_blank"
-        rel="noreferrer"
-      >
-        {kind === 'catalogue' ? 'Request catalogue on WhatsApp' : kind === 'consult' ? 'Ask about a consultation on WhatsApp' : 'Contact us on WhatsApp'}
-      </a>
-    </div>
+    <form
+      className="reference-form"
+      onSubmit={(event) => {
+        event.preventDefault()
+        setStatus('Thank you! Your inquiry has been received by our Addis Ababa concierge team.')
+      }}
+    >
+      <div className="form-pair">
+        <label>First name *<input name="firstName" required /></label>
+        <label>Last name *<input name="lastName" required /></label>
+      </div>
+      <div className="form-pair">
+        <label>Email address *<input name="email" type="email" required /></label>
+        <label>WhatsApp / Phone<input name="phone" type="tel" placeholder="+251 9..." /></label>
+      </div>
+      <label>Message / Project Details *<textarea name="message" rows={5} required /></label>
+      <button className="reference-button" type="submit">
+        {kind === 'catalogue' ? 'Request catalogue' : kind === 'consult' ? 'Request consultation' : 'Send message'}
+      </button>
+      {status && <p role="status" className="added-message">{status}</p>}
+    </form>
   )
 }
 
@@ -1310,7 +1317,7 @@ function CartPage({
   const [customerPhone, setCustomerPhone] = useState('')
   const [customerLocation, setCustomerLocation] = useState('')
   const [customerNotes, setCustomerNotes] = useState('')
-  const [inquiryError, setInquiryError] = useState('')
+  const [formSubmitted, setFormSubmitted] = useState(false)
 
   const generateWhatsAppUrl = () => {
     const lines = [
@@ -1325,6 +1332,15 @@ function CartPage({
     if (customerNotes.trim()) lines.push(`*Notes / Requests:* ${customerNotes.trim()}`)
     lines.push(`\nInquired via Maison Debrah Ethiopia website`)
     return `https://wa.me/${ETHIOPIA_CONTACT.whatsappRaw}?text=${encodeURIComponent(lines.join('\n'))}`
+  }
+
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!customerName.trim()) {
+      alert('Please enter your full name.')
+      return
+    }
+    setFormSubmitted(true)
   }
 
   return (
@@ -1404,10 +1420,30 @@ function CartPage({
               <span className="inquiry-eyebrow">Direct Concierge Service</span>
               <h2>Complete Your Design Inquiry</h2>
               <p>
-                Add your details below, then open WhatsApp to send your selection to our Addis Ababa team. Your inquiry is sent only when you tap Send in WhatsApp.
+                Please enter your details below. You can send your selection directly to our Addis Ababa team on <strong>WhatsApp ({ETHIOPIA_CONTACT.phone})</strong> for immediate response, or submit an online inquiry.
               </p>
             </div>
-              <div className="inquiry-details">
+
+            {formSubmitted ? (
+              <div className="inquiry-success-banner">
+                <div className="success-icon">✓</div>
+                <div>
+                  <strong>Inquiry Received, {customerName.trim()}!</strong>
+                  <p>
+                    Your request for {items.length} piece(s) has been forwarded to our Addis Ababa concierge desk. We will reach out via {customerPhone.trim() || 'your contact details'} shortly to confirm finishes, lead times, and delivery.
+                  </p>
+                  <button
+                    className="reference-button"
+                    style={{ marginTop: '14px' }}
+                    type="button"
+                    onClick={() => setFormSubmitted(false)}
+                  >
+                    Edit inquiry details
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleFormSubmit}>
                 <div className="inquiry-form-grid">
                   <div className="inquiry-field">
                     <label htmlFor="inq-name">
@@ -1417,12 +1453,8 @@ function CartPage({
                       id="inq-name"
                       required
                       value={customerName}
-                      onChange={(e) => {
-                        setCustomerName(e.target.value)
-                        setInquiryError('')
-                      }}
+                      onChange={(e) => setCustomerName(e.target.value)}
                       placeholder="e.g. Sara Haile"
-                      aria-describedby={inquiryError ? 'inquiry-error' : undefined}
                     />
                   </div>
                   <div className="inquiry-field">
@@ -1461,10 +1493,10 @@ function CartPage({
                 </div>
 
                 <div className="inquiry-methods-title">
-                  <span>Send your inquiry</span>
+                  <span>Choose Your Preferred Submission Method</span>
                 </div>
 
-                <div className="inquiry-actions-cards single">
+                <div className="inquiry-actions-cards">
                   <div className="inquiry-method-card primary">
                     <div className="method-badge">Direct & Instant</div>
                     <div className="method-header">
@@ -1483,18 +1515,33 @@ function CartPage({
                       rel="noreferrer"
                       onClick={(e) => {
                         if (!customerName.trim()) {
+                          alert('Please enter your Full Name above before sending via WhatsApp.')
                           e.preventDefault()
-                          setInquiryError('Enter your full name before opening WhatsApp.')
-                          document.getElementById('inq-name')?.focus()
                         }
                       }}
                     >
                       Send via WhatsApp ({totalPieces} {totalPieces === 1 ? 'piece' : 'pieces'}) →
                     </a>
                   </div>
+
+                  <div className="inquiry-method-card secondary">
+                    <div className="method-badge subtle">Email & Call</div>
+                    <div className="method-header">
+                      <span className="method-icon-circle form">
+                        ✉️
+                      </span>
+                      <div>
+                        <h3>Submit Online Form</h3>
+                        <p>Our team will prepare a formal catalog proposal and contact you</p>
+                      </div>
+                    </div>
+                    <button className="inquiry-btn form-btn" type="submit">
+                      Submit Online Inquiry →
+                    </button>
+                  </div>
                 </div>
-                {inquiryError && <p id="inquiry-error" role="alert" className="inquiry-error">{inquiryError}</p>}
-              </div>
+              </form>
+            )}
 
             <div className="inquiry-trust-strip">
               <div className="trust-item">
@@ -1560,7 +1607,7 @@ function AccountPage() {
 function CheckoutPage() {
   return (
     <StandardPage title="Inquiry Checkout">
-      <p>Send your selected pieces to our Addis Ababa showroom through WhatsApp.</p>
+      <p>Inquiries are processed directly through our Addis Ababa showroom via WhatsApp or our online inquiry form.</p>
       <Link className="reference-button" to="/cart">
         View your cart & complete inquiry
       </Link>
@@ -1586,11 +1633,11 @@ function ReferenceContentPage({ type }: { type: string }) {
     },
     'customer-service': {
       title: 'Customer service',
-      body: `Contact our Addis Ababa showroom on WhatsApp at ${ETHIOPIA_CONTACT.phone} for product assistance, dimensions, and delivery coordination.`,
+      body: `Contact our Addis Ababa showroom at ${ETHIOPIA_CONTACT.phone} or ${ETHIOPIA_CONTACT.email} for product assistance, dimensions, and white-glove delivery coordination.`,
     },
     faq: {
       title: 'Frequently asked questions',
-      body: 'How do inquiries work? Select your desired pieces in the cart and send them through WhatsApp. Our Addis Ababa team can discuss availability, finishes, lead times, and delivery.',
+      body: 'How do orders work? Simply select your desired pieces in the cart and submit via WhatsApp or website form. Our Addis Ababa concierge team will confirm availability, custom fabric choices, lead times, and delivery schedule.',
     },
     'catalogue-request': {
       title: 'Request a catalogue',
@@ -1605,12 +1652,12 @@ function ReferenceContentPage({ type }: { type: string }) {
   }
   const page = pages[type]
   if (!page) return <NotFound />
-  const inquiryKind = type === 'catalogue-request' ? 'catalogue' : type === 'design-consult' ? 'consult' : null
+  const formKind = type === 'catalogue-request' ? 'catalogue' : type === 'design-consult' ? 'consult' : null
   return (
     <StandardPage title={page.title} image={page.image}>
       <h2>{page.title}</h2>
       <p>{page.body}</p>
-      {inquiryKind && <DirectInquiryLink kind={inquiryKind} />}
+      {formKind && <PreviewForm kind={formKind} />}
     </StandardPage>
   )
 }
