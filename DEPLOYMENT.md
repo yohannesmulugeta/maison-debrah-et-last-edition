@@ -28,6 +28,8 @@ The existing Cloudflare Pages project `maisondebrah-et` uses the older `Maisonde
 4. Confirm HTTPS, the `www` redirect, root-relative assets, catalogue data, hash-route navigation and the separate `/admin/` demo.
 5. Commits to the connected production branch trigger deployments; review the Cloudflare build result before treating an update as published.
 
+If Pages reports that this project is disconnected from GitHub, restore the existing GitHub app's access to `yohannesmulugeta/maison-debrah-et-last-edition` and push a new commit. A GitHub Pages deployment does not update the Cloudflare custom domain.
+
 A Cloudflare zone Single Redirect rule matches `http.host eq "www.maisondebrah-et.com"` and returns a 301 redirect to `concat("https://maisondebrah-et.com", http.request.uri.path)` with query-string preservation. This hostname redirect is configured in Cloudflare rather than a Pages `_redirects` file. Existing hash routes remain unchanged.
 
 ## Draft status
