@@ -2,6 +2,8 @@
 
 A React/Vite showroom and inquiry catalogue adapted from [Maison Debrah's Dutch staging site](https://staging5.nl.maisondebrah.com/). The custom domain runs on Cloudflare Pages with `npm.cmd run build`; the GitHub Pages URL is a separate preview built with `npm.cmd run build:pages`. Both publish from `main`, so a push to that branch updates the public site.
 
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the current hosting configuration and recovery steps.
+
 ## Public draft preview
 
 [View the GitHub Pages preview](https://yohannesmulugeta.github.io/maison-debrah-et-last-edition/) after the Pages workflow finishes. The [custom domain](https://maisondebrah-et.com/) is served separately by Cloudflare Pages.
