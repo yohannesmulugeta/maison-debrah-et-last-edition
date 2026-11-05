@@ -50,8 +50,8 @@ export function PolicyContent({ type }: { type: PolicyType }) {
       <p>This notice describes the current Maison Debrah Ethiopia website. For questions about information you share with the showroom, use the contact details below.</p>
       <section>
         <h2>Information you choose to share</h2>
-        <p>When you contact the showroom on WhatsApp, you may provide your name, contact details, product choices and project requirements. Those details are used to respond to your request and discuss a possible quotation or service. The website does not offer a newsletter signup.</p>
-        <p>Website forms open a draft in your email app, and WhatsApp links open an editable message. You choose whether to send either message. The website does not send or store form details on a server.</p>
+        <p>When you contact the showroom, you may provide your name, contact details, product choices and project requirements. Those details are used to respond to your request and discuss a possible quotation or service. The website does not offer a newsletter signup.</p>
+        <p>On the main website, submitting an inquiry form saves those details in a private Cloudflare database and attempts to email an alert to the showroom using Hostinger Mail. The form tells you if the alert is delayed. Cloudflare Turnstile checks submissions for automated abuse. The GitHub Pages preview opens an email draft instead. WhatsApp links open editable messages that you choose whether to send.</p>
       </section>
       <section>
         <h2>Information kept in your browser</h2>
@@ -63,7 +63,7 @@ export function PolicyContent({ type }: { type: PolicyType }) {
       </section>
       <section>
         <h2>Your choices and questions</h2>
-        <p>You can ask the showroom about information sent to it, including access, correction or deletion requests where applicable. The website does not store inquiry forms on a server. Ask the showroom about its handling and retention of email and WhatsApp messages.</p>
+        <p>You can ask the showroom about information sent to it, including access, correction or deletion requests where applicable. Ask the showroom about its handling and retention of inquiry records, email and WhatsApp messages.</p>
       </section>
       <ContactLine />
     </div>

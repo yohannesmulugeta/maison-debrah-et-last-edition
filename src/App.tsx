@@ -4,6 +4,7 @@ import { categories, categoryName, productCategory, productsInCategory, topCateg
 import { collectionShowroomScenes, homeShowroomScenes, projectGroups } from './data/projectImages'
 import siteData from './data/site.json'
 import { PolicyContent, type PolicyType } from './PolicyContent'
+import { useInquirySubmission } from './inquiry'
 
 const ETHIOPIA_CONTACT = siteData.contact
 const HOME_CONTENT = siteData.home
@@ -1273,22 +1274,31 @@ function StandardPage({ title, children, image }: { title: string; children: Rea
 }
 
 function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
+  const inquiry = useInquirySubmission()
   const recipient = kind === 'contact' ? ETHIOPIA_CONTACT.email : ETHIOPIA_CONTACT.salesEmail
   const subject = kind === 'catalogue' ? 'Catalogue request' : kind === 'consult' ? 'Design consultation inquiry' : 'General inquiry'
   return (
     <form
       className="reference-form"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault()
         const fields = new FormData(event.currentTarget)
+        const name = `${fields.get('firstName')} ${fields.get('lastName')}`.trim()
+        const email = String(fields.get('email') || '').trim()
+        const phone = String(fields.get('phone') || '').trim()
+        const message = String(fields.get('message') || '').trim()
+        if (inquiry.canSubmit) {
+          await inquiry.submit({ kind, name, email, phone, message })
+          return
+        }
         const body = [
           'Hello Maison Debrah Ethiopia,',
           '',
-          `Name: ${fields.get('firstName')} ${fields.get('lastName')}`,
-          `Email: ${fields.get('email')}`,
-          `Phone / WhatsApp: ${fields.get('phone') || 'Not provided'}`,
+          `Name: ${name}`,
+          `Email: ${email}`,
+          `Phone / WhatsApp: ${phone || 'Not provided'}`,
           '',
-          String(fields.get('message') || ''),
+          message,
           '',
           'Thank you.',
         ].join('\n')
@@ -1304,10 +1314,12 @@ function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
         <label>WhatsApp / Phone<input name="phone" type="tel" placeholder="+251 9..." /></label>
       </div>
       <label>Message / Project Details *<textarea name="message" rows={5} required /></label>
-      <button className="reference-button" type="submit">
-        {kind === 'catalogue' ? 'Request catalogue by email' : kind === 'consult' ? 'Request consultation by email' : 'Open email draft'}
+      {inquiry.verification}
+      <button className="reference-button" type="submit" disabled={inquiry.pending || inquiry.complete}>
+        {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? 'Inquiry saved' : 'Send inquiry' : kind === 'catalogue' ? 'Request catalogue by email' : kind === 'consult' ? 'Request consultation by email' : 'Open email draft'}
       </button>
-      <p>This opens your email app. Please send the draft there, or email <a href={`mailto:${recipient}`}>{recipient}</a> directly.</p>
+      {inquiry.feedback}
+      <p>{inquiry.canSubmit ? 'We use your details to respond to this inquiry.' : 'This opens your email app. Please send the draft there.'} You can also email <a href={`mailto:${recipient}`}>{recipient}</a> directly. See our <Link to="/privacy">privacy policy</Link>.</p>
     </form>
   )
 }
@@ -1333,8 +1345,11 @@ function CartPage({
 
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
+  const [customerEmail, setCustomerEmail] = useState('')
   const [customerLocation, setCustomerLocation] = useState('')
   const [customerNotes, setCustomerNotes] = useState('')
+  const [contactError, setContactError] = useState('')
+  const inquiry = useInquirySubmission()
 
   const generateInquiryMessage = () => {
     const lines = [
@@ -1347,16 +1362,26 @@ function CartPage({
     ]
     if (customerName.trim()) lines.push('', `Name: ${customerName.trim()}`)
     if (customerPhone.trim()) lines.push(`Phone / WhatsApp: ${customerPhone.trim()}`)
+    if (customerEmail.trim()) lines.push(`Email: ${customerEmail.trim()}`)
     if (customerLocation.trim()) lines.push(`Location: ${customerLocation.trim()}`)
     if (customerNotes.trim()) lines.push(`Notes: ${customerNotes.trim()}`)
     lines.push('', 'Thank you.')
     return lines.join('\n')
   }
 
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!customerName.trim()) {
-      alert('Please enter your full name.')
+      setContactError('Please enter your full name.')
+      return
+    }
+    if (!customerPhone.trim() && !customerEmail.trim()) {
+      setContactError('Please enter a phone number or email address so we can reply.')
+      return
+    }
+    setContactError('')
+    if (inquiry.canSubmit) {
+      await inquiry.submit({ kind: 'product', name: customerName.trim(), email: customerEmail.trim(), phone: customerPhone.trim(), message: generateInquiryMessage() })
       return
     }
     window.location.assign(emailUrl(ETHIOPIA_CONTACT.salesEmail, 'Product inquiry', generateInquiryMessage()))
@@ -1441,7 +1466,7 @@ function CartPage({
               <span className="inquiry-eyebrow">Direct Concierge Service</span>
               <h2>Complete Your Design Inquiry</h2>
               <p>
-                Enter your details, then open a WhatsApp or email draft for your selection. Please send the draft in your chosen app.
+                {inquiry.canSubmit ? 'Enter your details and send your selection to our showroom team.' : 'Enter your details, then open a WhatsApp or email draft for your selection. Please send the draft in your chosen app.'}
               </p>
             </div>
 
@@ -1471,6 +1496,16 @@ function CartPage({
                     />
                   </div>
                   <div className="inquiry-field">
+                    <label htmlFor="inq-email">Email address</label>
+                    <input
+                      id="inq-email"
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  <div className="inquiry-field">
                     <label htmlFor="inq-loc">
                       Addis Ababa Sub-city / Neighborhood
                     </label>
@@ -1497,6 +1532,8 @@ function CartPage({
                 <div className="inquiry-methods-title">
                   <span>Choose Your Preferred Submission Method</span>
                 </div>
+
+                {inquiry.verification}
 
                 <div className="inquiry-actions-cards">
                   <div className="inquiry-method-card primary">
@@ -1534,14 +1571,17 @@ function CartPage({
                       </span>
                       <div>
                         <h3>Email Sales</h3>
-                        <p>Opens a draft to {ETHIOPIA_CONTACT.salesEmail}</p>
+                        <p>{inquiry.canSubmit ? `Sends your selection to ${ETHIOPIA_CONTACT.salesEmail}` : `Opens a draft to ${ETHIOPIA_CONTACT.salesEmail}`}</p>
                       </div>
                     </div>
-                    <button className="inquiry-btn form-btn" type="submit">
-                      Open email draft →
+                    <button className="inquiry-btn form-btn" type="submit" disabled={inquiry.pending || inquiry.complete}>
+                      {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? 'Inquiry saved' : 'Send inquiry →' : 'Open email draft →'}
                     </button>
                   </div>
                 </div>
+                {contactError && <p className="inquiry-feedback error" role="alert">{contactError}</p>}
+                {inquiry.feedback}
+                <p className="inquiry-privacy-note">We use your details to respond to your inquiry. See our <Link to="/privacy">privacy policy</Link>.</p>
               </form>
 
             <div className="inquiry-trust-strip">
@@ -1608,7 +1648,7 @@ function AccountPage() {
 function CheckoutPage() {
   return (
     <StandardPage title="Inquiry Checkout">
-      <p>Send your selection to our Addis Ababa team by WhatsApp or email. Your message opens as a draft for you to review and send.</p>
+      <p>Open your inquiry list to send your selection to our Addis Ababa team by website form or WhatsApp.</p>
       <Link className="reference-button" to="/cart">
         View your cart & complete inquiry
       </Link>
@@ -1638,7 +1678,7 @@ function ReferenceContentPage({ type }: { type: string }) {
     },
     faq: {
       title: 'Frequently asked questions',
-      body: 'How do inquiries work? Add pieces to your inquiry list, then open a WhatsApp or email draft and send it from your chosen app. Our team can then confirm product details, availability, prices, and delivery options.',
+      body: 'How do inquiries work? Add pieces to your inquiry list, then submit the website form or send a WhatsApp message. Our team can then confirm product details, availability, prices, and delivery options.',
     },
     'catalogue-request': {
       title: 'Request a catalogue',

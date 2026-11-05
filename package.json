@@ -6,12 +6,13 @@
   "scripts": {
     "predev": "npm run validate:content",
     "dev": "vite",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc -p tsconfig.functions.json",
+    "test": "node --test tests/inquiries.test.mjs",
     "lint": "oxlint",
     "validate:content": "node scripts/validate-content.mjs",
-    "build": "npm run validate:content && tsc -b && vite build",
+    "build": "npm run validate:content && npm run typecheck && vite build",
     "preview": "vite preview",
-    "build:pages": "npm run validate:content && tsc -b && vite build --base /maison-debrah-et-last-edition/"
+    "build:pages": "npm run validate:content && npm run typecheck && vite build --base /maison-debrah-et-last-edition/"
   },
   "dependencies": {
     "react": "^19.3.1",
@@ -19,6 +20,7 @@
     "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261104.1",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
