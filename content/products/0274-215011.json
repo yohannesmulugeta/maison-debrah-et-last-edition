@@ -1,0 +1,31 @@
+{
+  "id": 8961,
+  "name": "215011 (S / L)",
+  "slug": "215011",
+  "sku": "215011S / 215011L",
+  "summary": "Product details are being confirmed.",
+  "description": "",
+  "categories": [
+    {
+      "id": 130,
+      "name": "Decoratie",
+      "slug": "decoratie"
+    }
+  ],
+  "images": [
+    {
+      "src": "/media/2026/11/supplier-215011-1.webp",
+      "thumbnail": "/media/2026/11/supplier-215011-1.webp",
+      "alt": "215011 (S / L) view 1"
+    },
+    {
+      "src": "/media/2026/11/supplier-215011-2.webp",
+      "thumbnail": "/media/2026/11/supplier-215011-2.webp",
+      "alt": "215011 (S / L) view 2"
+    }
+  ],
+  "dimensions": "N/A",
+  "attributes": [],
+  "price": null,
+  "shopOrder": 273
+}

@@ -1,0 +1,31 @@
+{
+  "id": 8964,
+  "name": "Vase 215024",
+  "slug": "vase-215024",
+  "sku": "215024",
+  "summary": "Product details are being confirmed.",
+  "description": "",
+  "categories": [
+    {
+      "id": 225,
+      "name": "Vazen en plantenbakken",
+      "slug": "vazen-en-plantenbakken"
+    }
+  ],
+  "images": [
+    {
+      "src": "/media/2026/11/supplier-vase-215024-1.webp",
+      "thumbnail": "/media/2026/11/supplier-vase-215024-1.webp",
+      "alt": "Vase 215024 view 1"
+    },
+    {
+      "src": "/media/2026/11/supplier-vase-215024-2.webp",
+      "thumbnail": "/media/2026/11/supplier-vase-215024-2.webp",
+      "alt": "Vase 215024 view 2"
+    }
+  ],
+  "dimensions": "N/A",
+  "attributes": [],
+  "price": null,
+  "shopOrder": 276
+}

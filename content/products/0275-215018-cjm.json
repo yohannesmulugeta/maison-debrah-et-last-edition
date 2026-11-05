@@ -1,0 +1,31 @@
+{
+  "id": 8962,
+  "name": "215018CJM",
+  "slug": "215018-cjm",
+  "sku": "215018CJM",
+  "summary": "Product details are being confirmed.",
+  "description": "",
+  "categories": [
+    {
+      "id": 130,
+      "name": "Decoratie",
+      "slug": "decoratie"
+    }
+  ],
+  "images": [
+    {
+      "src": "/media/2026/11/supplier-215018-cjm-1.webp",
+      "thumbnail": "/media/2026/11/supplier-215018-cjm-1.webp",
+      "alt": "215018CJM view 1"
+    },
+    {
+      "src": "/media/2026/11/supplier-215018-cjm-2.webp",
+      "thumbnail": "/media/2026/11/supplier-215018-cjm-2.webp",
+      "alt": "215018CJM view 2"
+    }
+  ],
+  "dimensions": "N/A",
+  "attributes": [],
+  "price": null,
+  "shopOrder": 274
+}

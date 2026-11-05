@@ -1366,7 +1366,9 @@ function CartPage({
                       {product.name}
                     </Link>
                     <span className="cart-line-cat">{productCategory(product)}</span>
-                    <span className="cart-line-badge">Custom Crafted · Addis Ababa</span>
+                    <span className="cart-line-badge">
+                      {product.summary === 'Product details are being confirmed.' ? 'Details being confirmed' : 'Custom Crafted · Addis Ababa'}
+                    </span>
                   </div>
                   <div className="cart-qty-control">
                     <span className="qty-label">Quantity</span>

@@ -1,0 +1,31 @@
+{
+  "id": 8965,
+  "name": "215033",
+  "slug": "215033",
+  "sku": "215033",
+  "summary": "Product details are being confirmed.",
+  "description": "",
+  "categories": [
+    {
+      "id": 130,
+      "name": "Decoratie",
+      "slug": "decoratie"
+    }
+  ],
+  "images": [
+    {
+      "src": "/media/2026/11/supplier-215033-1.webp",
+      "thumbnail": "/media/2026/11/supplier-215033-1.webp",
+      "alt": "215033 view 1"
+    },
+    {
+      "src": "/media/2026/11/supplier-215033-2.webp",
+      "thumbnail": "/media/2026/11/supplier-215033-2.webp",
+      "alt": "215033 view 2"
+    }
+  ],
+  "dimensions": "N/A",
+  "attributes": [],
+  "price": null,
+  "shopOrder": 277
+}

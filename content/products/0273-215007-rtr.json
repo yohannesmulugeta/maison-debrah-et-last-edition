@@ -1,0 +1,31 @@
+{
+  "id": 8960,
+  "name": "215007 RTR (S / M / L)",
+  "slug": "215007-rtr",
+  "sku": "215007S-RTR / 215007M-RTR / 215007L-RTR",
+  "summary": "Product details are being confirmed.",
+  "description": "",
+  "categories": [
+    {
+      "id": 130,
+      "name": "Decoratie",
+      "slug": "decoratie"
+    }
+  ],
+  "images": [
+    {
+      "src": "/media/2026/11/supplier-215007-rtr-1.webp",
+      "thumbnail": "/media/2026/11/supplier-215007-rtr-1.webp",
+      "alt": "215007 RTR (S / M / L) view 1"
+    },
+    {
+      "src": "/media/2026/11/supplier-215007-rtr-2.webp",
+      "thumbnail": "/media/2026/11/supplier-215007-rtr-2.webp",
+      "alt": "215007 RTR (S / M / L) view 2"
+    }
+  ],
+  "dimensions": "N/A",
+  "attributes": [],
+  "price": null,
+  "shopOrder": 272
+}

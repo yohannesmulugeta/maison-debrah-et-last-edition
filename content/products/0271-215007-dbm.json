@@ -1,0 +1,31 @@
+{
+  "id": 8958,
+  "name": "215007 DBM (S / M / L)",
+  "slug": "215007-dbm",
+  "sku": "215007S-DBM / 215007M-DBM / 215007L-DBM",
+  "summary": "Product details are being confirmed.",
+  "description": "",
+  "categories": [
+    {
+      "id": 130,
+      "name": "Decoratie",
+      "slug": "decoratie"
+    }
+  ],
+  "images": [
+    {
+      "src": "/media/2026/11/supplier-215007-dbm-1.webp",
+      "thumbnail": "/media/2026/11/supplier-215007-dbm-1.webp",
+      "alt": "215007 DBM (S / M / L) view 1"
+    },
+    {
+      "src": "/media/2026/11/supplier-215007-dbm-2.webp",
+      "thumbnail": "/media/2026/11/supplier-215007-dbm-2.webp",
+      "alt": "215007 DBM (S / M / L) view 2"
+    }
+  ],
+  "dimensions": "N/A",
+  "attributes": [],
+  "price": null,
+  "shopOrder": 270
+}

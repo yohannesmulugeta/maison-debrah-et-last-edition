@@ -32,16 +32,17 @@ npm.cmd run build
 
 The demo has **no sign-in or database**. Changes are saved only in that browser's local storage, never in GitHub or on the public storefront. Use **Reset demo** to restore the original sample. Do not enter confidential information. This page is a visual and interaction preview for client review, not a live product management system.
 
-The repository no longer contains Pages CMS configuration or links. The original 268 product records remain in `content/products`. `npm.cmd run validate:content` checks them and generates `public/data/products.json` for the public site; the generated file is not committed. The site continues to use those records until a secure admin backend is approved and connected.
+The repository no longer contains Pages CMS configuration or links. The original 268 product records remain in `content/products`, alongside 12 photo-only supplier listings. `npm.cmd run validate:content` checks all 280 records and generates `public/data/products.json` for the public site; the generated file is not committed. The site continues to use those records until a secure admin backend is approved and connected.
 
 ## What is implemented
 
 - Responsive English homepage using a full showroom entrance hero, three collection paths, eight featured products, catalogue banner, five chair cards, showroom/consultation panels, newsletter panel and five-column footer.
 - Showroom gallery with 28 photographs, grouped by space on the existing `/projects` route. Optimized WebP copies live in `public/images/projects/`; the full-resolution JPG masters remain outside this repository.
 - Reference-style desktop header with category dropdowns, product search, brochure, account and cart links; mobile menu; floating cart and language links.
-- Searchable, categorized, paginated catalogue with the same 268 product records and 27 categories as the staging site. Desktop cards follow the staging shop order; public prices are currently hidden in favor of an inquiry flow.
+- Searchable, categorized, paginated catalogue with the 268 reference records and 12 photo-only supplier listings across 27 categories. Desktop cards follow the staging shop order; public prices are currently hidden in favor of an inquiry flow.
 - Product detail pages with the reference site's names, images, available summary text, category and related products. Product and collection names are unchanged. A browser-stored cart supports add, quantity, remove and persistence across refreshes.
 - Local images for 693 product gallery entries, reused by filename from the user's earlier public Maison Debrah recreation. The remaining 159 entries still use the staging host and may be unavailable when that site is down.
+- The 12 new listings use 24 optimized local photos and label unconfirmed details accordingly. Eight supplier photo groups with code or variant questions remain out of the catalogue; one overlapping folder was not added separately.
 - Clear loading, empty and error states. Forms, account access, checkout, payment and newsletter delivery are visible but not connected to a server; the preview does not submit orders or personal information.
 
 ## Remaining reference gaps

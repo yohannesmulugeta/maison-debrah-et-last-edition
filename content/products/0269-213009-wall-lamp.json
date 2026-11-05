@@ -1,0 +1,31 @@
+{
+  "id": 8956,
+  "name": "213009 wall lamp",
+  "slug": "213009-wall-lamp",
+  "sku": "213009",
+  "summary": "Product details are being confirmed.",
+  "description": "",
+  "categories": [
+    {
+      "id": 145,
+      "name": "Wandlampen",
+      "slug": "wandlampen"
+    }
+  ],
+  "images": [
+    {
+      "src": "/media/2026/11/supplier-213009-wall-lamp-1.webp",
+      "thumbnail": "/media/2026/11/supplier-213009-wall-lamp-1.webp",
+      "alt": "213009 wall lamp view 1"
+    },
+    {
+      "src": "/media/2026/11/supplier-213009-wall-lamp-2.webp",
+      "thumbnail": "/media/2026/11/supplier-213009-wall-lamp-2.webp",
+      "alt": "213009 wall lamp view 2"
+    }
+  ],
+  "dimensions": "N/A",
+  "attributes": [],
+  "price": null,
+  "shopOrder": 268
+}
