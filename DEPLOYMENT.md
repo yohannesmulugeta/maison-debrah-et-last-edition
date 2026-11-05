@@ -16,17 +16,16 @@ The repository name remains `maison-debrah-et-last-edition`.
 | Main domain | `maisondebrah-et.com` |
 | Alternate domain | `www.maisondebrah-et.com`, redirected to the main domain |
 
-Use `npm run build` for Cloudflare. `npm run build:pages` is reserved for the existing GitHub Pages project preview because it prefixes assets with the repository path.
+Use `npm run build` for Cloudflare. `npm run build:pages` is reserved for the existing GitHub Pages project preview because it prefixes assets with the repository path. Do not use that command for the custom domain.
 
 The existing Cloudflare Pages project `maisondebrah-et` uses the older `Maisondebrah-et` repository. Keep it separate from this deployment.
 
 ## Publishing and verification
 
 1. Run `npm ci`, `npm run lint`, and `npm run build`. The build validates product content and runs the TypeScript build.
-2. Review the Cloudflare preview deployment for the proposed branch.
-3. Confirm HTTPS, the `www` redirect, root-relative assets, catalogue data, hash-route navigation and the separate `/admin/` demo.
-4. Merge the reviewed change into `main` only after the business approves the website content and launch. Commits to `main` trigger production deployments.
-5. Check the custom domain after deployment, including `robots.txt`, `sitemap.xml`, the homepage canonical URL, menu, catalogue, cart and WhatsApp links.
+2. Confirm HTTPS, the `www` redirect, root-relative assets, catalogue data, hash-route navigation and the separate `/admin/` demo.
+3. Check the custom domain after deployment, including `robots.txt`, `sitemap.xml`, the homepage canonical URL, menu, catalogue, cart and WhatsApp links.
+4. Commits to the connected production branch trigger deployments; review the Cloudflare build result before treating an update as published.
 
 A Cloudflare zone Single Redirect rule matches `http.host eq "www.maisondebrah-et.com"` and returns a 301 redirect to `concat("https://maisondebrah-et.com", http.request.uri.path)` with query-string preservation. This hostname redirect is configured in Cloudflare rather than a Pages `_redirects` file. Existing hash routes remain unchanged.
 
