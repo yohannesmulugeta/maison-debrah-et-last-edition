@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 type InquiryKind = 'contact' | 'catalogue' | 'consult' | 'product'
 type InquiryDetails = { kind: InquiryKind; name: string; email: string; phone: string; message: string }
-type Submission = { reference: string; notificationSent: boolean }
+type Submission = { notificationSent: boolean }
 type TurnstileApi = {
   render: (element: HTMLElement, options: Record<string, unknown>) => string
   remove: (id: string) => void
@@ -78,8 +78,9 @@ export function useInquirySubmission() {
       })
       const result = await response.json().catch(() => null) as { ok?: boolean; reference?: string; notificationSent?: boolean; error?: string } | null
       if (!response.ok || !result?.ok || !result.reference) throw new Error(result?.error || 'We could not send your inquiry. Please try again or contact us directly.')
-      setSubmission({ reference: result.reference, notificationSent: result.notificationSent === true })
-      return true
+      const notificationSent = result.notificationSent === true
+      setSubmission({ notificationSent })
+      return notificationSent
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'We could not send your inquiry. Please try again.')
       if (widgetId.current) window.turnstile?.reset(widgetId.current)
@@ -94,14 +95,14 @@ export function useInquirySubmission() {
     canSubmit: CAN_SUBMIT,
     pending,
     complete: Boolean(submission),
+    sent: submission?.notificationSent === true,
     submit,
     verification: CAN_SUBMIT ? <div ref={widgetElement} className="inquiry-verification" aria-label="Spam protection verification" /> : null,
     feedback: <>
       {error && <p className="inquiry-feedback error" role="alert">{error}</p>}
-      {submission && <p className="inquiry-feedback success" role="status">
-        Your inquiry is saved. Reference: <strong>{submission.reference.slice(0, 8)}</strong>.
-        {!submission.notificationSent && ' Our email alert is delayed; for urgent requests, please contact us on WhatsApp.'}
-      </p>}
+      {submission && (submission.notificationSent
+        ? <p className="inquiry-feedback success" role="status">Your inquiry has been sent to our showroom team.</p>
+        : <p className="inquiry-feedback error" role="alert">We could not confirm delivery to our showroom team. Please contact us directly by WhatsApp or email.</p>)}
     </>,
   }
 }

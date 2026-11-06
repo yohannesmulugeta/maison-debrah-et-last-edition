@@ -1316,7 +1316,7 @@ function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
       <label>Message / Project Details *<textarea name="message" rows={5} required /></label>
       {inquiry.verification}
       <button className="reference-button" type="submit" disabled={inquiry.pending || inquiry.complete}>
-        {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? 'Inquiry saved' : 'Send inquiry' : kind === 'catalogue' ? 'Request catalogue by email' : kind === 'consult' ? 'Request consultation by email' : 'Open email draft'}
+        {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? inquiry.sent ? 'Inquiry sent' : 'Email not sent' : 'Send inquiry' : kind === 'catalogue' ? 'Request catalogue by email' : kind === 'consult' ? 'Request consultation by email' : 'Open email draft'}
       </button>
       {inquiry.feedback}
       <p>{inquiry.canSubmit ? 'We use your details to respond to this inquiry.' : 'This opens your email app. Please send the draft there.'} You can also email <a href={`mailto:${recipient}`}>{recipient}</a> directly. See our <Link to="/privacy">privacy policy</Link>.</p>
@@ -1349,6 +1349,7 @@ function CartPage({
   const [customerLocation, setCustomerLocation] = useState('')
   const [customerNotes, setCustomerNotes] = useState('')
   const [contactError, setContactError] = useState('')
+  const [sentItems, setSentItems] = useState<Array<{ slug: string; name: string; quantity: number }> | null>(null)
   const inquiry = useInquirySubmission()
 
   const generateInquiryMessage = () => {
@@ -1381,7 +1382,11 @@ function CartPage({
     }
     setContactError('')
     if (inquiry.canSubmit) {
-      await inquiry.submit({ kind: 'product', name: customerName.trim(), email: customerEmail.trim(), phone: customerPhone.trim(), message: generateInquiryMessage() })
+      const sent = await inquiry.submit({ kind: 'product', name: customerName.trim(), email: customerEmail.trim(), phone: customerPhone.trim(), message: generateInquiryMessage() })
+      if (sent) {
+        setSentItems(items.map((product) => ({ slug: product.slug, name: product.name, quantity: cart[product.slug] })))
+        setCart({})
+      }
       return
     }
     window.location.assign(emailUrl(ETHIOPIA_CONTACT.salesEmail, 'Product inquiry', generateInquiryMessage()))
@@ -1389,7 +1394,23 @@ function CartPage({
 
   return (
     <StandardPage title="Your Curated Selection">
-      {items.length ? (
+      {sentItems ? (
+        <section className="inquiry-sent-panel" aria-live="polite">
+          <span className="inquiry-sent-icon" aria-hidden="true">✓</span>
+          <span className="inquiry-eyebrow">Maison Debrah Ethiopia</span>
+          <h2>Your inquiry has been sent</h2>
+          <p>Your selection was sent to our showroom team. They can contact you using the details you provided.</p>
+          <div className="inquiry-sent-summary">
+            <h3>Products sent</h3>
+            <ul>
+              {sentItems.map((item) => (
+                <li key={item.slug}><span>{item.name}</span><strong>Qty {item.quantity}</strong></li>
+              ))}
+            </ul>
+          </div>
+          <Link className="button" to="/shop">Continue exploring collection</Link>
+        </section>
+      ) : items.length ? (
         <div className="cart-container">
           <div className="cart-items-card">
             <div className="cart-card-header">
@@ -1575,7 +1596,7 @@ function CartPage({
                       </div>
                     </div>
                     <button className="inquiry-btn form-btn" type="submit" disabled={inquiry.pending || inquiry.complete}>
-                      {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? 'Inquiry saved' : 'Send inquiry →' : 'Open email draft →'}
+                      {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? 'Email not sent' : 'Send inquiry →' : 'Open email draft →'}
                     </button>
                   </div>
                 </div>
