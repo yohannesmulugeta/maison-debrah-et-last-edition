@@ -1,3 +1,5 @@
+import { isValidPhone } from '../../src/phone.ts'
+
 interface Env {
   INQUIRIES_DB: D1Database
   TURNSTILE_SECRET: string
@@ -49,7 +51,7 @@ function parseInquiry(value: unknown): Inquiry | null {
   if (!name || name.length > 150 || !message || message.length > 5000) return null
   if (!email && !phone) return null
   if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) return null
-  if (phone.length > 50 || typeof turnstileToken !== 'string' || !turnstileToken || turnstileToken.length > 2048) return null
+  if ((phone && !isValidPhone(phone)) || typeof turnstileToken !== 'string' || !turnstileToken || turnstileToken.length > 2048) return null
   return { id, kind: kind as InquiryKind, name, email, phone, message, turnstileToken }
 }
 

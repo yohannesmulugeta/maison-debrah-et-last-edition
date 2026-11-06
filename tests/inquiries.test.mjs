@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { afterEach, test } from 'node:test'
 import { onRequestPost } from '../functions/api/inquiries.ts'
+import { isValidPhone } from '../src/phone.ts'
 import mailerWorker from '../workers/inquiry-mailer.js'
 
 const originalFetch = globalThis.fetch
@@ -81,6 +82,19 @@ test('saves an inquiry before notifying the correct mailbox', async () => {
 test('rejects invalid inquiries before storage or email', async () => {
   const { db, mailer, rows, calls } = setup()
   const response = await submit(db, inquiry({ email: '', phone: '', message: '' }), mailer)
+  assert.equal(response.status, 400)
+  assert.equal(rows.size, 0)
+  assert.equal(calls.length, 0)
+})
+
+test('accepts formatted phone numbers and rejects text or incomplete numbers', () => {
+  for (const phone of ['0911238324', '+251 91 123 8324', '+1 202 555 0123']) assert.equal(isValidPhone(phone), true, phone)
+  for (const phone of ['D9yd9yz9yz', '091ABC8324', '123', '251+911238324', '']) assert.equal(isValidPhone(phone), false, phone)
+})
+
+test('rejects an invalid phone even when an email address is provided', async () => {
+  const { db, mailer, rows, calls } = setup()
+  const response = await submit(db, inquiry({ phone: 'D9yd9yz9yz' }), mailer)
   assert.equal(response.status, 400)
   assert.equal(rows.size, 0)
   assert.equal(calls.length, 0)

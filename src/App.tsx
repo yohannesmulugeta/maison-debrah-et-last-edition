@@ -5,10 +5,12 @@ import { collectionShowroomScenes, homeShowroomScenes, projectGroups } from './d
 import siteData from './data/site.json'
 import { PolicyContent, type PolicyType } from './PolicyContent'
 import { useInquirySubmission } from './inquiry'
+import { hasPhoneCharacters, isValidPhone } from './phone'
 
 const ETHIOPIA_CONTACT = siteData.contact
 const HOME_CONTENT = siteData.home
 const GENERAL_WHATSAPP_MESSAGE = 'Hello Maison Debrah Ethiopia,\n\nI would like to learn more about your collection. Could you please assist me?\n\nThank you.'
+const PHONE_ERROR = 'Enter 7–15 digits. Only spaces and a leading + are allowed.'
 const whatsappUrl = (message: string) => `https://wa.me/${ETHIOPIA_CONTACT.whatsappRaw}?text=${encodeURIComponent(message)}`
 const emailUrl = (address: string, subject: string, body: string) => `mailto:${address}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 const productInquiryMessage = (product: Product, quantity: number) =>
@@ -1275,6 +1277,8 @@ function StandardPage({ title, children, image }: { title: string; children: Rea
 
 function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
   const inquiry = useInquirySubmission()
+  const [phoneValue, setPhoneValue] = useState('')
+  const [phoneError, setPhoneError] = useState('')
   const recipient = kind === 'contact' ? ETHIOPIA_CONTACT.email : ETHIOPIA_CONTACT.salesEmail
   const subject = kind === 'catalogue' ? 'Catalogue request' : kind === 'consult' ? 'Design consultation inquiry' : 'General inquiry'
   return (
@@ -1287,6 +1291,10 @@ function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
         const email = String(fields.get('email') || '').trim()
         const phone = String(fields.get('phone') || '').trim()
         const message = String(fields.get('message') || '').trim()
+        if (phoneError || (phone && !isValidPhone(phone))) {
+          setPhoneError(PHONE_ERROR)
+          return
+        }
         if (inquiry.canSubmit) {
           await inquiry.submit({ kind, name, email, phone, message })
           return
@@ -1311,7 +1319,16 @@ function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
       </div>
       <div className="form-pair">
         <label>Email address *<input name="email" type="email" required /></label>
-        <label>WhatsApp / Phone<input name="phone" type="tel" placeholder="+251 9..." /></label>
+        <label>WhatsApp / Phone
+          <input name="phone" type="tel" inputMode="tel" placeholder="+251 9..." value={phoneValue}
+            aria-invalid={Boolean(phoneError)} aria-describedby={phoneError ? `phone-error-${kind}` : undefined}
+            onChange={(event) => {
+              if (!hasPhoneCharacters(event.target.value)) return setPhoneError(PHONE_ERROR)
+              setPhoneValue(event.target.value)
+              setPhoneError('')
+            }} />
+          {phoneError && <span id={`phone-error-${kind}`} className="phone-field-error" role="alert">{phoneError}</span>}
+        </label>
       </div>
       <label>Message / Project Details *<textarea name="message" rows={5} required /></label>
       {inquiry.verification}
@@ -1349,6 +1366,7 @@ function CartPage({
   const [customerLocation, setCustomerLocation] = useState('')
   const [customerNotes, setCustomerNotes] = useState('')
   const [contactError, setContactError] = useState('')
+  const [phoneError, setPhoneError] = useState('')
   const [sentItems, setSentItems] = useState<Array<{ slug: string; name: string; quantity: number }> | null>(null)
   const inquiry = useInquirySubmission()
 
@@ -1362,7 +1380,7 @@ function CartPage({
       'Could you please confirm their details, availability, prices, and delivery options in Ethiopia?',
     ]
     if (customerName.trim()) lines.push('', `Name: ${customerName.trim()}`)
-    if (customerPhone.trim()) lines.push(`Phone / WhatsApp: ${customerPhone.trim()}`)
+    if (customerPhone.trim() && isValidPhone(customerPhone)) lines.push(`Phone / WhatsApp: ${customerPhone.trim()}`)
     if (customerEmail.trim()) lines.push(`Email: ${customerEmail.trim()}`)
     if (customerLocation.trim()) lines.push(`Location: ${customerLocation.trim()}`)
     if (customerNotes.trim()) lines.push(`Notes: ${customerNotes.trim()}`)
@@ -1378,6 +1396,10 @@ function CartPage({
     }
     if (!customerPhone.trim() && !customerEmail.trim()) {
       setContactError('Please enter a phone number or email address so we can reply.')
+      return
+    }
+    if (phoneError || (customerPhone.trim() && !isValidPhone(customerPhone))) {
+      setPhoneError(PHONE_ERROR)
       return
     }
     setContactError('')
@@ -1511,10 +1533,19 @@ function CartPage({
                     </label>
                     <input
                       id="inq-phone"
+                      type="tel"
+                      inputMode="tel"
                       value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      aria-invalid={Boolean(phoneError)}
+                      aria-describedby={phoneError ? 'inq-phone-error' : undefined}
+                      onChange={(event) => {
+                        if (!hasPhoneCharacters(event.target.value)) return setPhoneError(PHONE_ERROR)
+                        setCustomerPhone(event.target.value)
+                        setPhoneError('')
+                      }}
                       placeholder="+251 9..."
                     />
+                    {phoneError && <span id="inq-phone-error" className="phone-field-error" role="alert">{phoneError}</span>}
                   </div>
                   <div className="inquiry-field">
                     <label htmlFor="inq-email">Email address</label>
@@ -1576,6 +1607,9 @@ function CartPage({
                       onClick={(e) => {
                         if (!customerName.trim()) {
                           alert('Please enter your Full Name above before sending via WhatsApp.')
+                          e.preventDefault()
+                        } else if (phoneError || (customerPhone.trim() && !isValidPhone(customerPhone))) {
+                          setPhoneError(PHONE_ERROR)
                           e.preventDefault()
                         }
                       }}
