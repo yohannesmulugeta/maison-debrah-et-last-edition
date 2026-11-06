@@ -79,6 +79,25 @@ test('saves an inquiry before notifying the correct mailbox', async () => {
   assert.equal(JSON.parse(calls[1].options.body).to, 'contact@maisondebrah-et.com')
 })
 
+test('labels business inquiries and alerts the sales mailbox', async () => {
+  const { db, mailer, rows, calls } = setup()
+  const input = inquiry({ source: 'business', message: 'Business inquiry\nCompany: Example Studio\nProject details: Furnishing a reception area.' })
+  const response = await submit(db, input, mailer)
+  assert.equal(response.status, 200)
+  assert.equal(rows.get(input.id).kind, 'contact')
+  const alert = JSON.parse(calls[1].options.body)
+  assert.equal(alert.to, 'sales@maisondebrah-et.com')
+  assert.match(alert.subject, /Business inquiry/)
+  assert.match(alert.text, /Company: Example Studio/)
+})
+
+test('rejects an invalid business source', async () => {
+  const { db, mailer, calls } = setup()
+  const response = await submit(db, inquiry({ source: 'admin' }), mailer)
+  assert.equal(response.status, 400)
+  assert.equal(calls.length, 0)
+})
+
 test('rejects invalid inquiries before storage or email', async () => {
   const { db, mailer, rows, calls } = setup()
   const response = await submit(db, inquiry({ email: '', phone: '', message: '' }), mailer)

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 type InquiryKind = 'contact' | 'catalogue' | 'consult' | 'product'
-type InquiryDetails = { kind: InquiryKind; name: string; email: string; phone: string; message: string }
+type InquiryDetails = { kind: InquiryKind; name: string; email: string; phone: string; message: string; source?: 'business' }
 type Submission = { notificationSent: boolean }
 type TurnstileApi = {
   render: (element: HTMLElement, options: Record<string, unknown>) => string

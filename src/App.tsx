@@ -371,6 +371,7 @@ function Header({ count }: { count: number }) {
         <nav className="desktop-nav" aria-label="Main navigation" onClick={(event) => { if ((event.target as Element).closest('a')) setOpenMenu(null) }}>
           <NavLink to="/" end>Home</NavLink>
           {menuGroups.slice(0, 5).map((group) => <DesktopMenu group={group} openMenu={openMenu} setOpenMenu={setOpenMenu} key={group.label} />)}
+          <NavLink to="/professionals">Trade</NavLink>
           <a href={brochureUrl} target="_blank" rel="noreferrer">Brochure</a>
           <DesktopMenu group={menuGroups[5]} openMenu={openMenu} setOpenMenu={setOpenMenu} />
         </nav>
@@ -391,6 +392,7 @@ function Header({ count }: { count: number }) {
                   ))}
                 </details>
               ))}
+              <Link to="/professionals">For Professionals</Link>
               <a href={brochureUrl} target="_blank" rel="noreferrer">Brochure</a>
               <Link to="/contact">Addis Ababa Showroom</Link>
               <Link to="/cart">Inquiry Cart ({count})</Link>
@@ -433,6 +435,7 @@ function Footer() {
           <a href={`mailto:${ETHIOPIA_CONTACT.email}`}>Email: {ETHIOPIA_CONTACT.email}</a>
           <Link to="/catalogue-request">Request catalogue</Link>
           <Link to="/design-consult">Design consultation</Link>
+          <Link to="/professionals">For Professionals</Link>
         </section>
         <section>
           <h2>Addis Ababa Showroom</h2>
@@ -1275,12 +1278,13 @@ function StandardPage({ title, children, image }: { title: string; children: Rea
   )
 }
 
-function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
+function PreviewForm({ kind, business = false }: { kind: 'contact' | 'catalogue' | 'consult'; business?: boolean }) {
   const inquiry = useInquirySubmission()
   const [phoneValue, setPhoneValue] = useState('')
   const [phoneError, setPhoneError] = useState('')
-  const recipient = kind === 'contact' ? ETHIOPIA_CONTACT.email : ETHIOPIA_CONTACT.salesEmail
-  const subject = kind === 'catalogue' ? 'Catalogue request' : kind === 'consult' ? 'Design consultation inquiry' : 'General inquiry'
+  const recipient = kind === 'contact' && !business ? ETHIOPIA_CONTACT.email : ETHIOPIA_CONTACT.salesEmail
+  const subject = business ? 'Business inquiry' : kind === 'catalogue' ? 'Catalogue request' : kind === 'consult' ? 'Design consultation inquiry' : 'General inquiry'
+  const draftLabel = business ? 'Open business email draft' : kind === 'catalogue' ? 'Request catalogue by email' : kind === 'consult' ? 'Request consultation by email' : 'Open email draft'
   return (
     <form
       className="reference-form"
@@ -1291,12 +1295,20 @@ function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
         const email = String(fields.get('email') || '').trim()
         const phone = String(fields.get('phone') || '').trim()
         const message = String(fields.get('message') || '').trim()
+        const inquiryMessage = business ? [
+          'Business inquiry',
+          `Company: ${String(fields.get('company') || '').trim()}`,
+          `Organization type: ${String(fields.get('organizationType') || '').trim()}`,
+          `Project location: ${String(fields.get('projectLocation') || '').trim() || 'Not provided'}`,
+          '',
+          `Project details: ${message}`,
+        ].join('\n') : message
         if (phoneError || (phone && !isValidPhone(phone))) {
           setPhoneError(PHONE_ERROR)
           return
         }
         if (inquiry.canSubmit) {
-          await inquiry.submit({ kind, name, email, phone, message })
+          await inquiry.submit({ kind, name, email, phone, message: inquiryMessage, source: business ? 'business' : undefined })
           return
         }
         const body = [
@@ -1306,7 +1318,7 @@ function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
           `Email: ${email}`,
           `Phone / WhatsApp: ${phone || 'Not provided'}`,
           '',
-          message,
+          inquiryMessage,
           '',
           'Thank you.',
         ].join('\n')
@@ -1330,14 +1342,49 @@ function PreviewForm({ kind }: { kind: 'contact' | 'catalogue' | 'consult' }) {
           {phoneError && <span id={`phone-error-${kind}`} className="phone-field-error" role="alert">{phoneError}</span>}
         </label>
       </div>
-      <label>Message / Project Details *<textarea name="message" rows={5} required /></label>
+      {business && <div className="form-pair">
+        <label>Company / organization *<input name="company" maxLength={120} required /></label>
+        <label>Organization type *<select name="organizationType" defaultValue="" required>
+          <option value="" disabled>Select an option</option>
+          <option>Architecture / interior design</option>
+          <option>Hospitality</option>
+          <option>Property development</option>
+          <option>Retail / other business</option>
+        </select></label>
+      </div>}
+      {business && <label>Project location<input name="projectLocation" maxLength={120} placeholder="City or area" /></label>}
+      <label>{business ? 'Project details *' : 'Message / Project Details *'}<textarea name="message" rows={5} maxLength={business ? 4500 : undefined} required /></label>
       {inquiry.verification}
       <button className="reference-button" type="submit" disabled={inquiry.pending || inquiry.complete}>
-        {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? inquiry.sent ? 'Inquiry sent' : 'Email not sent' : 'Send inquiry' : kind === 'catalogue' ? 'Request catalogue by email' : kind === 'consult' ? 'Request consultation by email' : 'Open email draft'}
+        {inquiry.pending ? 'Sending inquiry…' : inquiry.canSubmit ? inquiry.complete ? inquiry.sent ? 'Inquiry sent' : 'Email not sent' : business ? 'Send business inquiry' : 'Send inquiry' : draftLabel}
       </button>
       {inquiry.feedback}
       <p>{inquiry.canSubmit ? 'We use your details to respond to this inquiry.' : 'This opens your email app. Please send the draft there.'} You can also email <a href={`mailto:${recipient}`}>{recipient}</a> directly. See our <Link to="/privacy">privacy policy</Link>.</p>
     </form>
+  )
+}
+
+function BusinessPage() {
+  return (
+    <StandardPage title="For Professionals" image="11.jpg">
+      <div className="business-intro">
+        <p className="business-eyebrow">Trade & project enquiries</p>
+        <h2>Tell us about your next project</h2>
+        <p>For architects, interior designers, hospitality teams, developers, and businesses planning spaces in Ethiopia. Share what you need, and our Addis Ababa team can discuss the collection, product availability, and next steps with you.</p>
+        <button className="reference-button" type="button" onClick={() => document.getElementById('business-inquiry')?.scrollIntoView({ behavior: 'smooth' })}>Discuss a project</button>
+        <Link className="business-collection-link" to="/shop">Explore the collection →</Link>
+      </div>
+      <div className="business-steps" aria-label="How business enquiries work">
+        <div><span>01</span><h3>Describe your project</h3><p>Tell us about the space, location, and the pieces you are considering.</p></div>
+        <div><span>02</span><h3>Explore the collection</h3><p>Browse furniture, lighting, and décor and include product names or codes in your request.</p></div>
+        <div><span>03</span><h3>Speak with our team</h3><p>Our team can confirm relevant product details and discuss your enquiry directly.</p></div>
+      </div>
+      <section id="business-inquiry" className="business-inquiry">
+        <h2>Business enquiry</h2>
+        <p>Tell us about your organization and project. We will use these details to respond to your request.</p>
+        <PreviewForm kind="contact" business />
+      </section>
+    </StandardPage>
   )
 }
 
@@ -1753,6 +1800,7 @@ function ReferenceContentPage({ type }: { type: string }) {
     <StandardPage title={page.title} image={page.image}>
       <h2>{page.title}</h2>
       <p>{page.body}</p>
+      {type === 'hospitality' && <Link className="reference-button" to="/professionals">Discuss a hospitality project</Link>}
       {formKind && <PreviewForm kind={formKind} />}
     </StandardPage>
   )
@@ -1920,6 +1968,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/professionals" element={<BusinessPage />} />
           {[
             'hospitality',
             'home-interiors',

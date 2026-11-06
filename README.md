@@ -45,6 +45,7 @@ The repository no longer contains Pages CMS configuration or links. The original
 - Local images for 693 product gallery entries, reused by filename from the user's earlier public Maison Debrah recreation. The remaining 159 entries still use the staging host and may be unavailable when that site is down.
 - The 12 new listings use 24 optimized local photos and label unconfirmed details accordingly. Eight supplier photo groups with code or variant questions remain out of the catalogue; one overlapping folder was not added separately.
 - Clear loading, empty and error states. On the custom domain, the contact, catalogue, consultation, and product inquiry forms save submissions in a private Cloudflare D1 database and attempt an email alert to the existing Hostinger mailboxes through Cloudflare Email Service. The form only confirms a saved record and warns if the alert is delayed. The GitHub Pages preview opens editable email drafts; WhatsApp links open editable message drafts. The site does not take orders or payments. Account access, checkout and payment remain preview-only.
+- A For Professionals page collects business and project enquiries. These use the existing contact inquiry storage, include the company and project details in the saved message, and send a business-labelled alert to the sales mailbox. Trade pricing, accounts, and ordering are not offered.
 
 ## Remaining reference gaps
 

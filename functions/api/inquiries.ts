@@ -14,6 +14,7 @@ type Inquiry = {
   email: string
   phone: string
   message: string
+  source?: 'business'
   turnstileToken: string
 }
 
@@ -44,15 +45,17 @@ function parseInquiry(value: unknown): Inquiry | null {
   const email = typeof input.email === 'string' ? input.email.trim() : ''
   const phone = typeof input.phone === 'string' ? input.phone.trim() : ''
   const message = typeof input.message === 'string' ? input.message.trim() : ''
+  const source = input.source
   const turnstileToken = input.turnstileToken
 
   if (typeof kind !== 'string' || !Object.hasOwn(recipients, kind)) return null
+  if (source !== undefined && (source !== 'business' || kind !== 'contact')) return null
   if (typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return null
   if (!name || name.length > 150 || !message || message.length > 5000) return null
   if (!email && !phone) return null
   if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) return null
   if ((phone && !isValidPhone(phone)) || typeof turnstileToken !== 'string' || !turnstileToken || turnstileToken.length > 2048) return null
-  return { id, kind: kind as InquiryKind, name, email, phone, message, turnstileToken }
+  return { id, kind: kind as InquiryKind, name, email, phone, message, source: source as 'business' | undefined, turnstileToken }
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
@@ -107,9 +110,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   let notificationSent = false
   try {
+    const title = input.source === 'business' ? 'Business inquiry' : titles[input.kind]
     const body = [
       `Reference: ${input.id}`,
-      `Type: ${titles[input.kind]}`,
+      `Type: ${title}`,
       `Name: ${input.name}`,
       `Email: ${input.email || 'Not provided'}`,
       `Phone / WhatsApp: ${input.phone || 'Not provided'}`,
@@ -119,7 +123,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const response = await env.MAILER.fetch('https://mailer.internal/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: recipients[input.kind], subject: `Maison Debrah: ${titles[input.kind]} (${input.id.slice(0, 8)})`, text: body }),
+      body: JSON.stringify({ to: input.source === 'business' ? recipients.product : recipients[input.kind], subject: `Maison Debrah: ${title} (${input.id.slice(0, 8)})`, text: body }),
       signal: AbortSignal.timeout(10_000),
     })
     const result = await response.json().catch(() => null) as { ok?: boolean } | null
