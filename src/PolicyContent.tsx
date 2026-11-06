@@ -51,7 +51,7 @@ export function PolicyContent({ type }: { type: PolicyType }) {
       <section>
         <h2>Information you choose to share</h2>
         <p>When you contact the showroom, you may provide your name, contact details, product choices and project requirements. Those details are used to respond to your request and discuss a possible quotation or service. The website does not offer a newsletter signup.</p>
-        <p>On the main website, submitting an inquiry form saves those details in a private Cloudflare database and attempts to email an alert to the showroom using Hostinger Mail. The form tells you if the alert is delayed. Cloudflare Turnstile checks submissions for automated abuse. The GitHub Pages preview opens an email draft instead. WhatsApp links open editable messages that you choose whether to send.</p>
+        <p>On the main website, submitting an inquiry form saves those details in a private Cloudflare database and attempts to email an alert to the showroom through Cloudflare Email Service. The form tells you if the alert is delayed. Cloudflare Turnstile checks submissions for automated abuse. The GitHub Pages preview opens an email draft instead. WhatsApp links open editable messages that you choose whether to send.</p>
       </section>
       <section>
         <h2>Information kept in your browser</h2>

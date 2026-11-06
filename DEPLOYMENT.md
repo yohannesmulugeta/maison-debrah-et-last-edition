@@ -32,7 +32,7 @@ If Pages reports that this project is disconnected from GitHub, restore the exis
 
 ## Inquiry service
 
-The custom domain's Pages Function at `/api/inquiries` stores inquiries in D1 and sends a notification through Hostinger Mail. The GitHub Pages preview continues to use email drafts. The existing Hostinger MX records remain in place.
+The custom domain's Pages Function at `/api/inquiries` stores inquiries in D1 and calls the private `maison-debrah-inquiry-mailer` Worker through a Service binding. The Worker sends alerts through Cloudflare Email Service only to the verified contact and sales destinations. The GitHub Pages preview continues to use email drafts. The existing Hostinger MX records remain in place.
 
 Cloudflare Pages requires these production and preview bindings and secrets:
 
@@ -40,10 +40,9 @@ Cloudflare Pages requires these production and preview bindings and secrets:
 | --- | --- | --- |
 | `INQUIRIES_DB` | D1 binding | `maison-debrah-inquiries` in production; `maison-debrah-inquiries-preview` in preview |
 | `TURNSTILE_SECRET` | Secret | Server verification for the website's Turnstile widget |
-| `HOSTINGER_MAIL_TOKEN` | Secret | API token limited to the selected sending mailbox |
-| `HOSTINGER_MAILBOX_ID` | Secret | Hostinger resource ID of that sending mailbox |
+| `MAILER` | Service binding | `maison-debrah-inquiry-mailer` Worker in both environments |
 
-Apply `migrations/0001_inquiries.sql` to each database before deploying the function. Never put the Turnstile secret or Hostinger token in Git or browser code. A Hostinger token can read and manage its selected mailbox as well as send mail, so scope it to a dedicated sending mailbox if available, protect it as a secret, and rotate it if exposed. The function routes general inquiries to `contact@maisondebrah-et.com` and catalogue, consultation, and product inquiries to `sales@maisondebrah-et.com`.
+Apply `migrations/0001_inquiries.sql` to each database before deploying the function. Deploy `workers/inquiry-mailer.js` using `workers/wrangler.jsonc`, keep its public `workers.dev` route disabled, and bind it as `MAILER` on the Pages project. Never put the Turnstile secret in Git or browser code. The Worker can send only from `website@maisondebrah-et.com` to the two verified destinations. General inquiries go to `contact@maisondebrah-et.com`; catalogue, consultation, and product inquiries go to `sales@maisondebrah-et.com`.
 
 After deployment, submit a labeled test inquiry from desktop and phone. Confirm the page shows a reference, the corresponding D1 row has `notification_status = 'sent'`, and the intended Hostinger inbox receives the alert. If an alert fails, the saved row is marked `failed` and the page says the alert is delayed. Review those rows in Cloudflare D1 and contact the visitor using their stored email or phone; there is no automatic retry queue yet. A 503 response means the visitor must use the direct email or WhatsApp link.
 

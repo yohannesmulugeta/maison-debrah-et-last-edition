@@ -1,0 +1,16 @@
+{
+  "name": "maison-debrah-inquiry-mailer",
+  "main": "inquiry-mailer.js",
+  "compatibility_date": "2026-11-06",
+  "workers_dev": false,
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_destination_addresses": [
+        "contact@maisondebrah-et.com",
+        "sales@maisondebrah-et.com"
+      ],
+      "allowed_sender_addresses": ["website@maisondebrah-et.com"]
+    }
+  ]
+}

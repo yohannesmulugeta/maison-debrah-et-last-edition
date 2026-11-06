@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
 import { afterEach, test } from 'node:test'
 import { onRequestPost } from '../functions/api/inquiries.ts'
+import mailerWorker from '../workers/inquiry-mailer.js'
 
 const originalFetch = globalThis.fetch
 afterEach(() => { globalThis.fetch = originalFetch })
 
-function setup({ mailStatus = 204, storageFails = false } = {}) {
+function setup({ mailStatus = 200, storageFails = false } = {}) {
   const rows = new Map()
   const calls = []
   const db = {
@@ -29,12 +30,18 @@ function setup({ mailStatus = 204, storageFails = false } = {}) {
       }
     },
   }
+  const mailer = {
+    async fetch(url, options) {
+      calls.push({ url: String(url), options })
+      return Response.json({ ok: mailStatus === 200 }, { status: mailStatus })
+    },
+  }
   globalThis.fetch = async (url, options) => {
     calls.push({ url: String(url), options })
     if (String(url).includes('siteverify')) return Response.json({ success: true, hostname: 'maisondebrah-et.com' })
-    return new Response(null, { status: mailStatus })
+    throw new Error('Unexpected external request')
   }
-  return { db, rows, calls }
+  return { db, mailer, rows, calls }
 }
 
 function inquiry(overrides = {}) {
@@ -50,63 +57,75 @@ function inquiry(overrides = {}) {
   }
 }
 
-async function submit(db, body) {
+async function submit(db, body, mailer) {
   return onRequestPost({
     request: new Request('https://maisondebrah-et.com/api/inquiries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Origin: 'https://maisondebrah-et.com' },
       body: JSON.stringify(body),
     }),
-    env: { INQUIRIES_DB: db, TURNSTILE_SECRET: 'test-secret', HOSTINGER_MAIL_TOKEN: 'test-token', HOSTINGER_MAILBOX_ID: 'mailbox-id' },
+    env: { INQUIRIES_DB: db, TURNSTILE_SECRET: 'test-secret', MAILER: mailer },
   })
 }
 
 test('saves an inquiry before notifying the correct mailbox', async () => {
-  const { db, rows, calls } = setup()
+  const { db, mailer, rows, calls } = setup()
   const input = inquiry()
-  const response = await submit(db, input)
+  const response = await submit(db, input, mailer)
   assert.equal(response.status, 200)
   assert.deepEqual(await response.json(), { ok: true, reference: input.id, notificationSent: true })
   assert.equal(rows.get(input.id).status, 'sent')
-  assert.deepEqual(JSON.parse(calls[1].options.body).to, ['contact@maisondebrah-et.com'])
+  assert.equal(JSON.parse(calls[1].options.body).to, 'contact@maisondebrah-et.com')
 })
 
 test('rejects invalid inquiries before storage or email', async () => {
-  const { db, rows, calls } = setup()
-  const response = await submit(db, inquiry({ email: '', phone: '', message: '' }))
+  const { db, mailer, rows, calls } = setup()
+  const response = await submit(db, inquiry({ email: '', phone: '', message: '' }), mailer)
   assert.equal(response.status, 400)
   assert.equal(rows.size, 0)
   assert.equal(calls.length, 0)
 })
 
 test('rejects an unknown inquiry type', async () => {
-  const { db, calls } = setup()
-  const response = await submit(db, inquiry({ kind: 'toString' }))
+  const { db, mailer, calls } = setup()
+  const response = await submit(db, inquiry({ kind: 'toString' }), mailer)
   assert.equal(response.status, 400)
   assert.equal(calls.length, 0)
 })
 
 test('does not claim receipt when storage fails', async () => {
-  const { db, calls } = setup({ storageFails: true })
-  const response = await submit(db, inquiry())
+  const { db, mailer, calls } = setup({ storageFails: true })
+  const response = await submit(db, inquiry(), mailer)
   assert.equal(response.status, 503)
   assert.equal(calls.length, 1)
 })
 
 test('reports delayed notification while retaining a saved product inquiry', async () => {
-  const { db, rows, calls } = setup({ mailStatus: 502 })
+  const { db, mailer, rows, calls } = setup({ mailStatus: 502 })
   const input = inquiry({ kind: 'product' })
-  const response = await submit(db, input)
+  const response = await submit(db, input, mailer)
   assert.deepEqual(await response.json(), { ok: true, reference: input.id, notificationSent: false })
   assert.equal(rows.get(input.id).status, 'failed')
-  assert.deepEqual(JSON.parse(calls[1].options.body).to, ['sales@maisondebrah-et.com'])
+  assert.equal(JSON.parse(calls[1].options.body).to, 'sales@maisondebrah-et.com')
 })
 
 test('repeated submission with the same reference does not notify twice', async () => {
-  const { db, calls } = setup()
+  const { db, mailer, calls } = setup()
   const input = inquiry()
-  await submit(db, input)
-  const response = await submit(db, input)
+  await submit(db, input, mailer)
+  const response = await submit(db, input, mailer)
   assert.equal((await response.json()).notificationSent, true)
-  assert.equal(calls.filter((call) => call.url.includes('mail.hostinger.com')).length, 1)
+  assert.equal(calls.filter((call) => call.url.includes('mailer.internal')).length, 1)
+})
+
+test('mailer accepts only the two showroom addresses', async () => {
+  const sent = []
+  const env = { EMAIL: { async send(message) { sent.push(message); return { delivered: [message.to], queued: [] } } } }
+  const body = { to: 'sales@maisondebrah-et.com', subject: 'Test inquiry', text: 'Please call me.' }
+  const accepted = await mailerWorker.fetch(new Request('https://mailer.internal/send', { method: 'POST', body: JSON.stringify(body) }), env)
+  assert.equal(accepted.status, 200)
+  assert.equal(sent[0].from, 'website@maisondebrah-et.com')
+  const rejected = await mailerWorker.fetch(new Request('https://mailer.internal/send', { method: 'POST', body: JSON.stringify({ ...body, to: 'other@example.com' }) }), env)
+  assert.equal(rejected.status, 400)
+  assert.equal(sent.length, 1)
 })

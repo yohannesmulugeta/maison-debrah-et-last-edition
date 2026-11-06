@@ -1,8 +1,7 @@
 interface Env {
   INQUIRIES_DB: D1Database
   TURNSTILE_SECRET: string
-  HOSTINGER_MAIL_TOKEN: string
-  HOSTINGER_MAILBOX_ID: string
+  MAILER: Fetcher
 }
 
 type InquiryKind = 'contact' | 'catalogue' | 'consult' | 'product'
@@ -55,7 +54,7 @@ function parseInquiry(value: unknown): Inquiry | null {
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  if (!env.INQUIRIES_DB || !env.TURNSTILE_SECRET || !env.HOSTINGER_MAIL_TOKEN || !env.HOSTINGER_MAILBOX_ID) {
+  if (!env.INQUIRIES_DB || !env.TURNSTILE_SECRET || !env.MAILER) {
     console.error('Inquiry service is not configured')
     return json({ error: 'Inquiry service is temporarily unavailable. Please email or WhatsApp us.' }, 503)
   }
@@ -115,13 +114,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       '',
       input.message,
     ].join('\n')
-    const response = await fetch(`https://api.mail.hostinger.com/api/v1/mailboxes/${encodeURIComponent(env.HOSTINGER_MAILBOX_ID)}/send`, {
+    const response = await env.MAILER.fetch('https://mailer.internal/send', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${env.HOSTINGER_MAIL_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: [recipients[input.kind]], subject: `Maison Debrah: ${titles[input.kind]} (${input.id.slice(0, 8)})`, text: body }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: recipients[input.kind], subject: `Maison Debrah: ${titles[input.kind]} (${input.id.slice(0, 8)})`, text: body }),
       signal: AbortSignal.timeout(10_000),
     })
-    notificationSent = response.status === 204
+    const result = await response.json().catch(() => null) as { ok?: boolean } | null
+    notificationSent = response.ok && result?.ok === true
     if (!notificationSent) console.error('Inquiry notification failed', response.status)
   } catch (error) {
     console.error('Inquiry notification failed', error)
