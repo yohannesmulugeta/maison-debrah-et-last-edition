@@ -120,7 +120,7 @@ test('repeated submission with the same reference does not notify twice', async 
 
 test('mailer accepts only the two showroom addresses', async () => {
   const sent = []
-  const env = { EMAIL: { async send(message) { sent.push(message); return { delivered: [message.to], queued: [] } } } }
+  const env = { EMAIL: { async send(message) { sent.push(message); return { messageId: 'test-message-id' } } } }
   const body = { to: 'sales@maisondebrah-et.com', subject: 'Test inquiry', text: 'Please call me.' }
   const accepted = await mailerWorker.fetch(new Request('https://mailer.internal/send', { method: 'POST', body: JSON.stringify(body) }), env)
   assert.equal(accepted.status, 200)

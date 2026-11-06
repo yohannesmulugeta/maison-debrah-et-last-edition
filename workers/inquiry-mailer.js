@@ -26,7 +26,7 @@ export default {
         subject: message.subject,
         text: message.text,
       })
-      const accepted = result.delivered?.includes(message.to) || result.queued?.includes(message.to)
+      const accepted = typeof result.messageId === 'string' && result.messageId.length > 0
       return Response.json({ ok: Boolean(accepted) }, { status: accepted ? 200 : 502 })
     } catch (error) {
       console.error('Cloudflare inquiry email failed', error)
