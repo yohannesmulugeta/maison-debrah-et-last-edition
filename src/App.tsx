@@ -1513,7 +1513,7 @@ function CartPage({
                       id="inq-phone"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="+251 937 928 215"
+                      placeholder="+251 9..."
                     />
                   </div>
                   <div className="inquiry-field">
